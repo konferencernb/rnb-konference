@@ -172,6 +172,14 @@ export const load = async ({ locals }) => {
 };
 ```
 
+**Client-side sign-in/sign-out:** `src/lib/auth-client.ts` exports `authClient`
+(from `better-auth/svelte`), used by the `/admin` login form
+(`authClient.signIn.email(...)`) and the "Odhlásit" buttons in the admin area
+(`authClient.signOut()`). `src/routes/admin/konference/+layout.server.ts`
+guards everything under `/admin/konference` — no `locals.session` redirects
+back to `/admin`. There's no self-serve sign-up route; admin accounts are
+created directly via `auth.api.signUpEmail(...)` (server-side only).
+
 ## UI components
 
 All components from [shadcn-svelte](https://shadcn-svelte.com) are installed

@@ -56,6 +56,12 @@ user rather than acting, even if the fix seems small or obvious.
   what was asked (extra files, unrelated refactors, broader renames), stop
   and ask before doing the additional work rather than expanding scope
   silently.
+- **Tests:** never write or run tests — UI tests included, e.g. Playwright —
+  without asking the user first and getting explicit go-ahead. This is
+  separate from the verification commands (`bun run check`, `bun run
+check:types`, `bun run test`) that are still expected before finishing a
+  task; it's about adding new test files or exercising UI flows, not running
+  the existing suite.
 
 ## Commands
 
@@ -103,6 +109,38 @@ auth:schema` from `src/lib/server/auth.ts`. Never hand-edit it — change the
   `bun run test`; run `bun run build` for anything touching routing, config,
   or the auth/db wiring. Husky's pre-commit hook runs the same three steps
   automatically (see below), but never commit without the user asking first.
+
+### Colors: use tokens, not raw values
+
+- Colors live in [src/routes/layout.css](src/routes/layout.css) as CSS
+  variables (`--background`, `--primary`, `--muted-foreground`, `--border`,
+  etc.), mapped to Tailwind utilities via `@theme inline`. Use the resulting
+  classes (`bg-background`, `text-muted-foreground`, `border-border`,
+  `bg-primary text-primary-foreground`, …) — never a raw hex/oklch value or an
+  arbitrary Tailwind color (`bg-gray-100`, `text-[#111]`) in component markup.
+- Need a color that doesn't exist yet? Add a token (both `:root` and `.dark`,
+  plus the `@theme inline` mapping) instead of hardcoding a one-off value, so
+  dark mode and future reuse come for free.
+
+### Components: rule of three
+
+- Don't extract a component preemptively. Once the same markup/logic is
+  written a **third** time, pull it into a component under
+  `src/lib/components/` (or `src/lib/components/admin/` for admin-only UI).
+  Two occurrences can stay duplicated.
+- Reach for an existing `src/lib/components/ui/**` (shadcn-svelte) primitive
+  before building new markup that reimplements one.
+
+### Follow Svelte 5 idioms
+
+- Runes, not legacy reactivity: `$state`, `$derived`, `$effect`, `$props` —
+  not `export let`, `$:`, or `writable` stores for local component state.
+- Snippets (`{#snippet ...}` / `{@render ...}`) instead of named slots.
+- Event props (`onclick={...}`) instead of `on:click`; no `createEventDispatcher`.
+- If existing code in the file you're touching still uses the legacy form,
+  match the surrounding style rather than mixing runes and legacy reactivity
+  in the same component — flag it instead of silently rewriting unrelated
+  code.
 
 ## Pre-commit hook
 
