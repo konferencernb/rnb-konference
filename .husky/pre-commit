@@ -1,0 +1,4 @@
+bun run format
+git add -u
+bun run check
+bun run test
