@@ -1,0 +1,1 @@
+ALTER TABLE "watch_heartbeat" ADD COLUMN "is_live" boolean NOT NULL;

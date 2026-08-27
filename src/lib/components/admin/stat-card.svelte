@@ -2,7 +2,11 @@
 	import type { Component } from 'svelte';
 	import { Card, CardContent } from '$lib/components/ui/card';
 
-	let { icon: Icon, label, value }: { icon: Component; label: string; value: number } = $props();
+	let {
+		icon: Icon,
+		label,
+		value
+	}: { icon: Component; label: string; value: number | string } = $props();
 </script>
 
 <Card>

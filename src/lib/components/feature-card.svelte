@@ -9,12 +9,16 @@
 	}: { icon: Component; title: string; description: string } = $props();
 </script>
 
-<Card>
+<Card class="transition-shadow hover:shadow-md">
 	<CardContent class="flex flex-col gap-3">
-		<div class="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-			<Icon class="size-5" />
+		<div class="flex items-center gap-3">
+			<div
+				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-primary to-primary/70 text-primary-foreground"
+			>
+				<Icon class="size-5" />
+			</div>
+			<h3 class="font-semibold tracking-tight">{title}</h3>
 		</div>
-		<h3 class="font-semibold">{title}</h3>
 		<p class="text-sm text-muted-foreground">{description}</p>
 	</CardContent>
 </Card>

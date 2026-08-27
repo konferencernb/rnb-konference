@@ -8,6 +8,62 @@
       "when": 1787046100799,
       "tag": "0000_bouncy_tenebrous",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787752347179,
+      "tag": "0001_cultured_black_bird",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787773915376,
+      "tag": "0002_sudden_galactus",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1787821784813,
+      "tag": "0003_breezy_hex",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787823080669,
+      "tag": "0004_moaning_king_cobra",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787827513620,
+      "tag": "0005_mute_storm",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787828378822,
+      "tag": "0006_absurd_wolfsbane",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787829354140,
+      "tag": "0007_happy_menace",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787830517065,
+      "tag": "0008_purple_mac_gargan",
+      "breakpoints": true
     }
   ]
 }

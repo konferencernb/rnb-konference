@@ -1,34 +1,110 @@
-# Feature: Basic UI Implementation
+# Feature: Paid Conference Streaming Access
 
 ## Summary
 
-Implement the basic application UI, using `docs/concepts/ui` as design/reference inspiration.
+Streaming platform for conferences. Each conference is a live YouTube stream
+during the event, and the same recording afterward. Payment happens outside
+the app (accountant reconciles bank transfers and tells the admin who paid);
+the admin then grants the paying customer permanent access to that specific
+conference — both live, while it's happening, and as a replay afterward.
+Customers register their own accounts.
 
 ## Requirements
 
-### 1. UI Foundation
+### 1. Conference (event) management
 
-- Implement a basic UI based on the concepts and direction described in `docs/concepts/ui`.
-- Treat `docs/concepts/ui` as the source of truth for layout, structure, and visual direction — review it before starting implementation.
+- Admin can create a conference: `title`, `description`, `price`, `videoUrl`
+  (YouTube embed URL), optional `startsAt` (informational only, shown in
+  listings — does not drive status).
+- Conference has a `status`: `upcoming` / `live` / `ended`, toggled manually
+  by the admin (not derived from `startsAt`/`endsAt` — stream start times
+  aren't reliable enough to automate this without risking showing "live"
+  when nothing is actually streaming).
+- `videoUrl` is a single field reused for both the live stream and the
+  replay — a YouTube live stream keeps the same video ID/URL once it ends
+  and archiving/saving is enabled on the YouTube side. The admin can still
+  edit `videoUrl` after the conference ends (e.g. to swap in an edited cut),
+  but it's optional, not a required step.
+- Access to a purchased conference does not expire — once granted, it's
+  permanent.
 
-### 2. Component Structure
+### 2. Accounts
 
-- Break the UI down into reusable components wherever it makes sense, for example:
-  - `Navbar`
-  - `Footer`
-  - Any other logical, reusable pieces identified while implementing the layout (e.g. page containers, sidebars, cards, sections)
-- Each component should be self-contained and placed in the appropriate components directory following the project's existing conventions.
+- Customers self-register (email/password, via the existing better-auth
+  setup) — no admin-created accounts.
+- Admin role is a `role` column on the user, set manually in the database
+  for now — no role-management UI. The app only needs to check
+  `user.role === 'admin'` to gate the admin area; promoting further admins
+  later is a manual DB edit, not a feature to build yet.
+- `role === 'admin'` also bypasses the access-grant check entirely — an
+  admin can watch any conference without needing their own grant record.
+- The accountant does not get an app account. They reconcile payment
+  externally and pass who-paid-for-what to the admin (email/message,
+  outside the app), who enters the access grant manually.
 
-### 3. Component Library
+### 3. Payment & access granting
 
-- Use **shadcn/ui** components wherever possible instead of building custom elements from scratch.
-- Limit raw/plain HTML elements — prefer shadcn (or existing project) components for buttons, inputs, layout primitives, navigation, etc.
-- Only fall back to raw HTML when no suitable shadcn component exists or is practical for the use case.
+- Payment happens outside the app; price is per individual conference (no
+  bundles/subscriptions for now).
+- Accountant reconciles payment externally and informs the admin who paid
+  for which conference.
+- Admin looks up the existing (self-registered) user by email and creates an
+  `access grant` linking that user to that conference.
+- Admin can also revoke an access grant (mistaken grant, refund) — deleting
+  the grant immediately removes the customer's access.
+- No `access grant` record for a user+conference pair means no access to
+  that conference at all — enforced server-side (the page's server-side
+  `load` must check the grant before ever including `videoUrl` in the
+  response; the frontend player is not the security boundary).
+- When an access grant is created, the customer gets an email notification
+  that they now have access, sent via SMTP through an existing mailbox
+  (e.g. the Active24 email account) using nodemailer — not a transactional
+  email service. Needs SMTP host/port/user/password as new env vars (see
+  Environment variables section of README.md).
+
+### 4. Conference listing & playback
+
+- All conferences are visible to everyone, logged in or not, including ones
+  the visitor hasn't purchased — the listing and locked detail pages don't
+  require login. Locked ones show the price and static payment/contact info
+  (e.g. bank details or an email/phone to reach out to) — no "request
+  access" button or in-app purchase flow, the customer reaches out outside
+  the app.
+- Conferences the customer has an access grant for are playable, live or as
+  replay, via an embedded player (iframe), never a direct link to the
+  YouTube URL.
+
+### 5. Playback protections (deterrents, not real security)
+
+- Right-click and text selection disabled on the player page.
+- YouTube video set to Unlisted/Private with embedding restricted to the
+  app's domain.
+- Optional: watermark overlay with the logged-in user's email/name over the
+  video, to discourage screen-recording redistribution.
+- These are all deterrents on top of the real control, which is the
+  server-side access-grant check in requirement 3 — none of this prevents a
+  determined user from using DevTools or copying the stream URL.
+
+## Open questions
+
+None currently — all resolved for this iteration.
 
 ## Acceptance Criteria
 
-- [x] UI reflects the direction/inspiration in `docs/concepts/ui`
-- [x] Navbar and Footer components exist and are used in the layout
-- [x] Additional sensible components are extracted rather than inlined
-- [x] shadcn components are used in place of raw HTML wherever reasonably possible
-- [x] Raw HTML usage is minimized and justified where it remains
+- [ ] Admin can create/edit a conference with `title`, `description`,
+      `price`, `videoUrl`, optional `startsAt`
+- [ ] Admin can manually toggle conference status between `upcoming` /
+      `live` / `ended`
+- [ ] Customers can self-register and log in
+- [ ] Admin can grant/revoke a specific user's access to a specific
+      conference
+- [ ] Admin area is gated by `user.role === 'admin'`, and an admin can play
+      any conference without needing an access grant
+- [ ] All conferences are listed for everyone, logged in or not; unpurchased
+      ones show as locked with price/contact info
+- [ ] A conference's `videoUrl` is only ever sent to the client if the
+      requesting user has an access grant for it (server-side check)
+- [ ] Player page disables right-click/text selection and embeds via iframe
+      only, never a direct YouTube link
+- [ ] Customer receives an email (via SMTP/nodemailer) when an admin grants
+      them access to a conference
