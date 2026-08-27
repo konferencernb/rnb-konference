@@ -1,5 +1,5 @@
 import { error, fail } from '@sveltejs/kit';
-import { and, desc, eq, ne } from 'drizzle-orm';
+import { and, desc, eq, isNull, ne } from 'drizzle-orm';
 import { formatCustomerName } from '$lib/format-name';
 import { db } from '$lib/server/db';
 import { accessGrant, conference, user } from '$lib/server/db/schema';
@@ -71,7 +71,10 @@ export const actions: Actions = {
 		const [foundUser] = await db.select().from(user).where(eq(user.id, userId));
 		if (!foundUser) return fail(400, { grantError: 'Uživatel nenalezen.' });
 
-		const [found] = await db.select().from(conference).where(eq(conference.id, params.id));
+		const [found] = await db
+			.select()
+			.from(conference)
+			.where(and(eq(conference.id, params.id), isNull(conference.deactivatedAt)));
 		if (!found) error(404, 'Konference nenalezena');
 
 		await db

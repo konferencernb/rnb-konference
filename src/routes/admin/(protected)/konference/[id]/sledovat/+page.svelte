@@ -16,17 +16,10 @@
 	} from '$lib/components/ui/dialog';
 	import { Empty, EmptyDescription } from '$lib/components/ui/empty';
 	import YoutubePlayer from '$lib/components/youtube-player.svelte';
+	import { formatDuration } from '$lib/format-duration';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
-
-	function formatDuration(totalSeconds: number) {
-		const hours = Math.floor(totalSeconds / 3600);
-		const minutes = Math.floor((totalSeconds % 3600) / 60);
-		if (hours > 0) return `${hours} h ${minutes} min`;
-		if (minutes > 0) return `${minutes} min`;
-		return `${totalSeconds} s`;
-	}
 
 	function formatBreakdown(liveSeconds: number, recordedSeconds: number) {
 		if (liveSeconds > 0 && recordedSeconds > 0) {

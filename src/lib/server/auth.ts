@@ -9,7 +9,11 @@ export const auth = betterAuth({
 	baseURL: env.ORIGIN,
 	secret: env.BETTER_AUTH_SECRET,
 	database: drizzleAdapter(db, { provider: 'pg' }),
-	emailAndPassword: { enabled: true },
+	// Sign-in stays enabled (existing customers/admin still log in with
+	// email+password); sign-up is disabled at the API level too, not just by
+	// removing the /registrace page — customers are now only ever created via
+	// an admin-sent invite (see $lib/server/invites.ts), never self-serve.
+	emailAndPassword: { enabled: true, disableSignUp: true },
 	user: {
 		additionalFields: {
 			role: {

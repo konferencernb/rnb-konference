@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { toast } from 'svelte-sonner';
+	import { applyAction, enhance } from '$app/forms';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
@@ -27,9 +28,17 @@
 	class="grid gap-6 lg:grid-cols-[2fr_1fr]"
 	use:enhance={() => {
 		submitting = true;
-		return async ({ update }) => {
-			await update();
+		return async ({ result }) => {
+			await applyAction(result);
 			submitting = false;
+
+			if (result.type === 'success') {
+				toast.success('Změny byly úspěšně uloženy.');
+			} else if (result.type === 'failure') {
+				toast.error((result.data?.error as string | undefined) ?? 'Změny se nepodařilo uložit.');
+			} else if (result.type === 'error') {
+				toast.error('Něco se pokazilo. Zkuste to prosím znovu.');
+			}
 		};
 	}}
 >

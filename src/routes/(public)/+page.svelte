@@ -27,8 +27,8 @@
 				Online konference Nemocnice Beroun
 			</h1>
 			<p class="max-w-md text-hero-foreground/80">
-				Odborné přednášky pro lékaře a zdravotnický personál. Zaregistrujte se a po uhrazení
-				účastnického poplatku vám přidělíme přístup ke konkrétní konferenci.
+				Odborné přednášky pro lékaře a zdravotnický personál. Po uhrazení účastnického poplatku vám
+				přidělíme přístup ke konkrétní konferenci.
 			</p>
 			<Button
 				href={resolve('/konference')}

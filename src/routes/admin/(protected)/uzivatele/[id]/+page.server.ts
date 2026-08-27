@@ -1,5 +1,5 @@
 import { error, fail } from '@sveltejs/kit';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { accessGrant, conference, user, watchSession } from '$lib/server/db/schema';
 import { sendAccessGrantedEmail } from '$lib/server/email';
@@ -27,13 +27,14 @@ export const load: PageServerLoad = async ({ params }) => {
 			watchSession,
 			and(eq(watchSession.conferenceId, conference.id), eq(watchSession.userId, accessGrant.userId))
 		)
-		.where(eq(accessGrant.userId, customer.id));
+		.where(and(eq(accessGrant.userId, customer.id), isNull(conference.deactivatedAt)));
 
 	const grantedConferenceIds = new Set(grants.map((g) => g.conferenceId));
 
 	const conferences = await db
 		.select()
 		.from(conference)
+		.where(isNull(conference.deactivatedAt))
 		.orderBy(desc(conference.startsAt), desc(conference.createdAt));
 	const availableConferences = conferences.filter((c) => !grantedConferenceIds.has(c.id));
 
@@ -50,7 +51,7 @@ export const actions: Actions = {
 		const [foundConference] = await db
 			.select()
 			.from(conference)
-			.where(eq(conference.id, conferenceId));
+			.where(and(eq(conference.id, conferenceId), isNull(conference.deactivatedAt)));
 
 		if (!foundConference) return fail(400, { grantError: 'Konference nenalezena.' });
 

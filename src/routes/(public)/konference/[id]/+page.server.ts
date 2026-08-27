@@ -1,12 +1,15 @@
 import { error } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { hasConferenceAccess } from '$lib/server/access';
 import { db } from '$lib/server/db';
 import { accessLog, conference } from '$lib/server/db/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals, request, getClientAddress }) => {
-	const [found] = await db.select().from(conference).where(eq(conference.id, params.id));
+	const [found] = await db
+		.select()
+		.from(conference)
+		.where(and(eq(conference.id, params.id), isNull(conference.deactivatedAt)));
 
 	if (!found) {
 		error(404, 'Konference nenalezena');

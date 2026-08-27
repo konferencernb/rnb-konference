@@ -60,11 +60,6 @@
 					{submitting ? 'Přihlašování…' : 'Přihlásit se'}
 				</Button>
 			</form>
-			<p class="text-center text-sm text-muted-foreground">
-				Nemáte účet? <a href={resolve('/registrace')} class="text-foreground underline"
-					>Zaregistrujte se</a
-				>
-			</p>
 		</CardContent>
 	</Card>
 </div>

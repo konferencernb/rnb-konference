@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { toast } from 'svelte-sonner';
+	import { goto } from '$app/navigation';
+	import { applyAction, enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
-	import { enhance } from '$app/forms';
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
@@ -35,9 +37,24 @@
 		class="mt-8 grid gap-6 lg:grid-cols-[2fr_1fr]"
 		use:enhance={() => {
 			submitting = true;
-			return async ({ update }) => {
-				await update();
+			return async ({ result }) => {
+				if (result.type === 'redirect') {
+					toast.success('Konference byla úspěšně vytvořena.');
+					// eslint-disable-next-line svelte/no-navigation-without-resolve -- result.location is already a server-resolved path, not a route id
+					await goto(result.location, { invalidateAll: true });
+					return;
+				}
+
+				await applyAction(result);
 				submitting = false;
+
+				if (result.type === 'failure') {
+					toast.error(
+						(result.data?.error as string | undefined) ?? 'Konferenci se nepodařilo vytvořit.'
+					);
+				} else if (result.type === 'error') {
+					toast.error('Něco se pokazilo. Zkuste to prosím znovu.');
+				}
 			};
 		}}
 	>

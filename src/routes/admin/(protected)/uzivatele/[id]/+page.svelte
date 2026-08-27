@@ -27,6 +27,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Popover, PopoverContent, PopoverTrigger } from '$lib/components/ui/popover';
+	import { formatDuration } from '$lib/format-duration';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -38,14 +39,6 @@
 
 	function formatConferenceDate(startsAt: string | Date | null) {
 		return startsAt ? new Date(startsAt).toLocaleDateString('cs-CZ') : '';
-	}
-
-	function formatDuration(totalSeconds: number) {
-		const hours = Math.floor(totalSeconds / 3600);
-		const minutes = Math.floor((totalSeconds % 3600) / 60);
-		if (hours > 0) return `${hours} h ${minutes} min`;
-		if (minutes > 0) return `${minutes} min`;
-		return `${totalSeconds} s`;
 	}
 
 	// PopoverTrigger's props include onclick/onkeydown meant for a button trigger

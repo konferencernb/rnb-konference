@@ -1,7 +1,7 @@
-import { and, count, desc, eq, gt, gte, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gt, gte, inArray, isNull, ne, sql } from 'drizzle-orm';
 import { formatCustomerName } from '$lib/format-name';
 import { db } from '$lib/server/db';
-import { accessGrant, user, watchHeartbeat, watchSession } from '$lib/server/db/schema';
+import { accessGrant, conference, user, watchHeartbeat, watchSession } from '$lib/server/db/schema';
 
 export const viewerStatuses = ['online', 'watched', 'never', 'invited'] as const;
 export type ViewerStatus = (typeof viewerStatuses)[number];
@@ -290,4 +290,99 @@ export async function getViewerTimeline(conferenceId: string, options?: { isLive
 	}
 
 	return timeline;
+}
+
+// Distinct-viewer counts per day, across every conference, from the 1st of
+// the current calendar month through today — the dashboard's "sledovanost
+// tento měsíc" chart. Days with no activity still get an explicit 0 point
+// rather than being omitted, same reasoning as getViewerTimeline above.
+export async function getMonthlyViewershipTimeline() {
+	const now = new Date();
+	const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+	const rows = await db
+		.select({
+			day: sql<string>`date_trunc('day', ${watchHeartbeat.seenAt})`.as('day'),
+			viewers: sql<number>`count(distinct ${watchHeartbeat.userId})`
+		})
+		.from(watchHeartbeat)
+		.where(gte(watchHeartbeat.seenAt, monthStart))
+		.groupBy(sql`day`)
+		.orderBy(sql`day`);
+
+	const countByDay = new Map<number, number>();
+	for (const row of rows) {
+		countByDay.set(new Date(row.day).setHours(0, 0, 0, 0), Number(row.viewers));
+	}
+
+	const timeline: { bucket: Date; viewers: number }[] = [];
+	for (
+		const cursor = new Date(monthStart);
+		cursor.getTime() <= now.getTime();
+		cursor.setDate(cursor.getDate() + 1)
+	) {
+		const key = cursor.getTime();
+		timeline.push({ bucket: new Date(key), viewers: countByDay.get(key) ?? 0 });
+	}
+
+	return timeline;
+}
+
+// Every customer (not just those who've watched something), ordered by total
+// watch time across every conference — the dashboard's "Uživatelé" card. A
+// left join keeps users with zero watch time in the list instead of
+// dropping them.
+export async function getUsersByWatchTime(limit = 5) {
+	const totalSecondsExpr = sql<string>`coalesce(sum(${watchSession.liveWatchSeconds} + ${watchSession.recordedWatchSeconds}), 0)`;
+
+	const rows = await db
+		.select({
+			userId: user.id,
+			name: user.name,
+			firstName: user.firstName,
+			lastName: user.lastName,
+			email: user.email,
+			watchSeconds: totalSecondsExpr.as('watch_seconds')
+		})
+		.from(user)
+		.leftJoin(watchSession, eq(watchSession.userId, user.id))
+		.where(ne(user.role, 'admin'))
+		.groupBy(user.id, user.name, user.firstName, user.lastName, user.email)
+		.orderBy(desc(sql`watch_seconds`))
+		.limit(limit);
+
+	return rows.map((row) => ({
+		userId: row.userId,
+		displayName: formatCustomerName(row),
+		watchSeconds: Number(row.watchSeconds)
+	}));
+}
+
+// For the most recent live/ended conferences: how many people actually
+// watched vs. how many had been granted access — the dashboard's
+// "sledovanost konferencí" chart. Returned in chronological order.
+export async function getRecentConferenceWatchSummary(limit = 6) {
+	const recentConferences = await db
+		.select({ id: conference.id, title: conference.title })
+		.from(conference)
+		.where(and(inArray(conference.status, ['live', 'ended']), isNull(conference.deactivatedAt)))
+		.orderBy(desc(conference.startsAt))
+		.limit(limit);
+
+	const summaries = await Promise.all(
+		recentConferences.map(async (c) => {
+			const [{ expected }] = await db
+				.select({ expected: count() })
+				.from(accessGrant)
+				.where(eq(accessGrant.conferenceId, c.id));
+			const [{ watched }] = await db
+				.select({ watched: count() })
+				.from(watchSession)
+				.where(eq(watchSession.conferenceId, c.id));
+
+			return { id: c.id, title: c.title, watched, expected };
+		})
+	);
+
+	return summaries.reverse();
 }

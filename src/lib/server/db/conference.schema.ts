@@ -23,6 +23,12 @@ export const conference = pgTable('conference', {
 	videoUrl: text('video_url'),
 	status: text('status', { enum: conferenceStatus }).notNull().default('upcoming'),
 	startsAt: timestamp('starts_at'),
+	// Soft-delete: set instead of actually deleting the row, so existing
+	// access grants/watch history/logs referencing this conference are kept
+	// intact. A deactivated conference is filtered out of every listing and
+	// detail page across the app — the only way back is clearing this
+	// directly in the database, there's no "reactivate" UI.
+	deactivatedAt: timestamp('deactivated_at'),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at')
 		.defaultNow()

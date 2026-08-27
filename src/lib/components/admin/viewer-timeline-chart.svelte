@@ -1,7 +1,15 @@
 <script lang="ts">
 	import { Empty, EmptyDescription } from '$lib/components/ui/empty';
 
-	let { data }: { data: { bucket: Date; viewers: number }[] } = $props();
+	let {
+		data,
+		granularity = 'time',
+		ariaLabel = 'Počet souběžných diváků v čase'
+	}: {
+		data: { bucket: Date; viewers: number }[];
+		granularity?: 'time' | 'day';
+		ariaLabel?: string;
+	} = $props();
 
 	let containerWidth = $state(600);
 	const height = 220;
@@ -58,6 +66,9 @@
 	}
 
 	function formatTime(time: number) {
+		if (granularity === 'day') {
+			return new Date(time).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' });
+		}
 		return new Date(time).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
 	}
 
@@ -102,7 +113,7 @@
 			width={containerWidth}
 			{height}
 			role="img"
-			aria-label="Počet souběžných diváků v čase"
+			aria-label={ariaLabel}
 			onpointermove={onPointerMove}
 			onpointerleave={onPointerLeave}
 		>

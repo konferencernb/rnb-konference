@@ -29,8 +29,8 @@
 </script>
 
 <header class="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
-	<div class="mx-auto grid max-w-6xl grid-cols-3 items-center gap-4 px-6 py-3">
-		<a href={resolve('/')} class="flex items-center gap-3 justify-self-start">
+	<div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
+		<a href={resolve('/')} class="flex items-center gap-3">
 			<span
 				class="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground"
 			>
@@ -41,14 +41,17 @@
 				<span class="text-xs tracking-wide text-muted-foreground uppercase">Online konference</span>
 			</span>
 		</a>
-		<nav class="flex items-center gap-1 justify-self-center">
-			{#each links as link (link.href)}
-				<Button href={link.href} variant={page.url.pathname === link.href ? 'secondary' : 'ghost'}>
-					{link.label}
-				</Button>
-			{/each}
-		</nav>
-		<div class="flex items-center gap-1 justify-self-end">
+		<div class="flex items-center gap-4">
+			<nav class="flex items-center gap-1">
+				{#each links as link (link.href)}
+					<Button
+						href={link.href}
+						variant={page.url.pathname === link.href ? 'secondary' : 'ghost'}
+					>
+						{link.label}
+					</Button>
+				{/each}
+			</nav>
 			{#if user}
 				<DropdownMenu>
 					<DropdownMenuTrigger>
@@ -75,13 +78,6 @@
 					</DropdownMenuContent>
 				</DropdownMenu>
 			{:else}
-				<Button
-					href={resolve('/registrace')}
-					variant="outline"
-					class="border-foreground bg-transparent"
-				>
-					Registrace
-				</Button>
 				<Button href={resolve('/prihlaseni')}>Přihlásit se</Button>
 			{/if}
 		</div>

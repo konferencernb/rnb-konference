@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { toast } from 'svelte-sonner';
+	import { goto } from '$app/navigation';
+	import { applyAction, enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
-	import { enhance } from '$app/forms';
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
@@ -34,24 +36,39 @@
 				class="flex flex-col gap-4"
 				use:enhance={() => {
 					submitting = true;
-					return async ({ update }) => {
-						await update();
+					return async ({ result }) => {
+						if (result.type === 'redirect') {
+							toast.success('Pozvánka byla úspěšně odeslána.');
+							// eslint-disable-next-line svelte/no-navigation-without-resolve -- result.location is already a server-resolved path, not a route id
+							await goto(result.location, { invalidateAll: true });
+							return;
+						}
+
+						await applyAction(result);
 						submitting = false;
+
+						if (result.type === 'failure') {
+							toast.error(
+								(result.data?.error as string | undefined) ?? 'Pozvánku se nepodařilo odeslat.'
+							);
+						} else if (result.type === 'error') {
+							toast.error('Něco se pokazilo. Zkuste to prosím znovu.');
+						}
 					};
 				}}
 			>
 				<div class="flex gap-3">
 					<div class="flex flex-1 flex-col gap-1.5">
-						<Label for="firstName">Jméno</Label>
+						<Label for="firstName">Jméno <span class="text-destructive">*</span></Label>
 						<Input id="firstName" name="firstName" required />
 					</div>
 					<div class="flex flex-1 flex-col gap-1.5">
-						<Label for="lastName">Příjmení</Label>
+						<Label for="lastName">Příjmení <span class="text-destructive">*</span></Label>
 						<Input id="lastName" name="lastName" required />
 					</div>
 				</div>
 				<div class="flex flex-col gap-1.5">
-					<Label for="email">Email</Label>
+					<Label for="email">Email <span class="text-destructive">*</span></Label>
 					<Input id="email" name="email" type="email" required />
 				</div>
 				{#if form?.error}

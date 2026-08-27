@@ -64,6 +64,13 @@
       "when": 1787830517065,
       "tag": "0008_purple_mac_gargan",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1787836109667,
+      "tag": "0009_demonic_vargas",
+      "breakpoints": true
     }
   ]
 }
