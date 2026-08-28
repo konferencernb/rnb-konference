@@ -2,9 +2,13 @@
 	import ConferenceCard from '$lib/components/conference-card.svelte';
 	import { Empty, EmptyDescription } from '$lib/components/ui/empty';
 	import { Spinner } from '$lib/components/ui/spinner';
+	import { shouldPlayIntroAnimation } from '$lib/intro-animation';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+
+	// Only animate the very first time this session — see intro-animation.ts.
+	const playIntro = shouldPlayIntroAnimation();
 
 	let conferences = $state(data.conferences);
 	let hasMore = $state(data.hasMore);
@@ -40,7 +44,13 @@
 
 <section class="bg-linear-to-b from-accent-soft to-background">
 	<div class="mx-auto max-w-6xl px-6 pt-16">
-		<h1 class="text-4xl font-bold tracking-tight">Konference</h1>
+		<h1
+			class="text-4xl font-bold tracking-tight {playIntro
+				? 'animate-in duration-700 fade-in slide-in-from-top-4'
+				: ''}"
+		>
+			Konference
+		</h1>
 	</div>
 </section>
 
@@ -51,8 +61,15 @@
 		</Empty>
 	{:else}
 		<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-			{#each conferences as conference (conference.id)}
-				<ConferenceCard {conference} />
+			{#each conferences as conference, i (conference.id)}
+				<div
+					class={playIntro
+						? 'animate-in duration-700 fill-mode-both fade-in slide-in-from-top-4'
+						: ''}
+					style:animation-delay={playIntro ? `${150 + (i % 12) * 80}ms` : undefined}
+				>
+					<ConferenceCard {conference} />
+				</div>
 			{/each}
 		</div>
 		{#if hasMore}

@@ -1,7 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { hashPassword } from 'better-auth/crypto';
 import { eq } from 'drizzle-orm';
-import { resolve } from '$app/paths';
 import { sendInviteEmail } from '$lib/server/email';
 import { db } from '$lib/server/db';
 import { account, user, userInvite } from '$lib/server/db/schema';
@@ -36,8 +35,12 @@ export async function createInvite(input: { firstName: string; lastName: string;
 		expiresAt: new Date(Date.now() + INVITE_TTL_MS)
 	});
 
-	const inviteUrl = `${env.ORIGIN}${resolve('/(public)/dokonceni-registrace/[token]', { token })}`;
-	await sendInviteEmail(created.email, created.firstName, inviteUrl);
+	// A plain template, not resolve() — resolve() builds a path *relative* to
+	// the current request's URL (SvelteKit's default `paths.relative`), which
+	// is correct for an href rendered in a page but breaks for a URL that's
+	// going into an email, where there's no "current page" to resolve against.
+	const inviteUrl = `${env.ORIGIN}/dokonceni-registrace/${token}`;
+	await sendInviteEmail(created.email, created.firstName, created.lastName, inviteUrl);
 
 	return { user: created };
 }

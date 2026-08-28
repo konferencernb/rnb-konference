@@ -86,7 +86,7 @@ export const actions: Actions = {
 			})
 			.onConflictDoNothing();
 
-		await sendAccessGrantedEmail(foundUser.email, found.title);
+		await sendAccessGrantedEmail(foundUser.email, found.title, found.id);
 
 		return { granted: true };
 	},

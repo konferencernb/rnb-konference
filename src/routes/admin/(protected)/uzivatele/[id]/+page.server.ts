@@ -1,5 +1,6 @@
-import { error, fail } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import { and, desc, eq, isNull } from 'drizzle-orm';
+import { resolve } from '$app/paths';
 import { db } from '$lib/server/db';
 import { accessGrant, conference, user, watchSession } from '$lib/server/db/schema';
 import { sendAccessGrantedEmail } from '$lib/server/email';
@@ -66,7 +67,7 @@ export const actions: Actions = {
 
 		const [customer] = await db.select().from(user).where(eq(user.id, params.id));
 		if (customer) {
-			await sendAccessGrantedEmail(customer.email, foundConference.title);
+			await sendAccessGrantedEmail(customer.email, foundConference.title, foundConference.id);
 		}
 
 		return { granted: true };
@@ -83,5 +84,14 @@ export const actions: Actions = {
 			.where(and(eq(accessGrant.id, grantId), eq(accessGrant.userId, params.id)));
 
 		return { revoked: true };
+	},
+
+	// Customers have no soft-delete (unlike conferences) — this removes the
+	// row outright. Cascades to their access grants, watch history, and any
+	// pending invite. The load above already 404s on an admin's own id, so
+	// this can never be reached for an admin account.
+	deleteUser: async ({ params }) => {
+		await db.delete(user).where(eq(user.id, params.id));
+		redirect(303, resolve('/admin/uzivatele'));
 	}
 };

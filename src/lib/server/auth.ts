@@ -1,3 +1,4 @@
+import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import { betterAuth } from 'better-auth/minimal';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
@@ -9,6 +10,15 @@ export const auth = betterAuth({
 	baseURL: env.ORIGIN,
 	secret: env.BETTER_AUTH_SECRET,
 	database: drizzleAdapter(db, { provider: 'pg' }),
+	// Dev-only: baseURL is pinned to http://localhost:5173, so a phone or
+	// other device on the same Wi-Fi hitting the dev server by its LAN IP
+	// (e.g. http://192.168.1.23:5173) sends an Origin header that doesn't
+	// match — better-auth's CSRF check then rejects sign-in with a 403 that
+	// the UI shows as "wrong email or password". These patterns only widen
+	// what's trusted for local network testing; never applied in production.
+	...(dev && {
+		trustedOrigins: ['http://192.168.*.*:5173', 'http://10.*.*.*:5173', 'http://172.*.*.*:5173']
+	}),
 	// Sign-in stays enabled (existing customers/admin still log in with
 	// email+password); sign-up is disabled at the API level too, not just by
 	// removing the /registrace page — customers are now only ever created via

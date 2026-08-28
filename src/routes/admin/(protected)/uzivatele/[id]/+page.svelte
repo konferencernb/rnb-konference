@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { tick } from 'svelte';
+	import { toast } from 'svelte-sonner';
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { enhance } from '$app/forms';
+	import { applyAction, enhance } from '$app/forms';
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import CalendarPlus from '@lucide/svelte/icons/calendar-plus';
 	import CirclePlus from '@lucide/svelte/icons/circle-plus';
@@ -36,6 +38,7 @@
 	let searchQuery = $state('');
 	let selectedConferenceId = $state<string | undefined>(undefined);
 	let grantFormEl = $state<HTMLFormElement>();
+	let deleteDialogOpen = $state(false);
 
 	function formatConferenceDate(startsAt: string | Date | null) {
 		return startsAt ? new Date(startsAt).toLocaleDateString('cs-CZ') : '';
@@ -100,6 +103,50 @@
 					).toLocaleDateString('cs-CZ')}
 				</p>
 			{/if}
+			<AlertDialog bind:open={deleteDialogOpen}>
+				<AlertDialogTrigger>
+					{#snippet child({ props })}
+						<Button {...props} variant="destructive" size="sm" class="mt-3">
+							<Trash2 data-icon="inline-start" />
+							Smazat uživatele
+						</Button>
+					{/snippet}
+				</AlertDialogTrigger>
+				<AlertDialogContent interactOutsideBehavior="close">
+					<AlertDialogHeader>
+						<AlertDialogTitle>Smazat uživatele</AlertDialogTitle>
+						<AlertDialogDescription>
+							Opravdu chcete smazat uživatele {formatCustomerName(data.customer)}? Nenávratně se
+							smažou i všechny jeho přístupy a historie sledování.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<form
+						method="POST"
+						action="?/deleteUser"
+						use:enhance={() => {
+							return async ({ result }) => {
+								if (result.type === 'redirect') {
+									deleteDialogOpen = false;
+									toast.success('Uživatel byl úspěšně smazán.');
+									// eslint-disable-next-line svelte/no-navigation-without-resolve -- result.location is already a server-resolved path, not a route id
+									await goto(result.location, { invalidateAll: true });
+									return;
+								}
+
+								await applyAction(result);
+								if (result.type === 'error') {
+									toast.error('Uživatele se nepodařilo smazat.');
+								}
+							};
+						}}
+					>
+						<AlertDialogFooter>
+							<AlertDialogCancel type="button" variant="ghost">Zrušit</AlertDialogCancel>
+							<AlertDialogAction type="submit" variant="destructive">Ano</AlertDialogAction>
+						</AlertDialogFooter>
+					</form>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 		<Button href={resolve('/admin/uzivatele')} variant="outline">
 			<ArrowLeft data-icon="inline-start" />

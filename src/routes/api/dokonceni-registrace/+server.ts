@@ -1,4 +1,5 @@
 import { error, json } from '@sveltejs/kit';
+import { validatePassword } from '$lib/password';
 import { completeInvite } from '$lib/server/invites';
 import type { RequestHandler } from './$types';
 
@@ -8,7 +9,8 @@ export const POST: RequestHandler = async ({ request }) => {
 	const password = typeof body.password === 'string' ? body.password : '';
 
 	if (!token || !password) error(400, 'Chybí token nebo heslo.');
-	if (password.length < 8) error(400, 'Heslo musí mít alespoň 8 znaků.');
+	const passwordError = validatePassword(password);
+	if (passwordError) error(400, passwordError);
 
 	const result = await completeInvite(token, password);
 

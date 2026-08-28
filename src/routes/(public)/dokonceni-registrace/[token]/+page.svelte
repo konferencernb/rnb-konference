@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { toast } from 'svelte-sonner';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -7,6 +8,7 @@
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import { validatePassword } from '$lib/password';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -20,8 +22,9 @@
 		event.preventDefault();
 		error = null;
 
-		if (password.length < 8) {
-			error = 'Heslo musí mít alespoň 8 znaků.';
+		const passwordError = validatePassword(password);
+		if (passwordError) {
+			error = passwordError;
 			return;
 		}
 		if (password !== passwordConfirm) {
@@ -39,14 +42,20 @@
 
 		if (!response.ok) {
 			const body = await response.json().catch(() => null);
-			error = body?.message ?? 'Registraci se nepodařilo dokončit.';
+			const message: string = body?.message ?? 'Registraci se nepodařilo dokončit.';
+			error = message;
 			submitting = false;
+			toast.error(message);
 			return;
 		}
 
 		const { email } = await response.json();
 		await authClient.signIn.email({ email, password });
-		await goto(resolve('/konference'));
+		toast.success('Registrace byla úspěšně dokončena.');
+		// invalidateAll so the navbar picks up the freshly created session
+		// immediately — without it the layout's `data.user` stays stale (still
+		// logged-out) until the next unrelated navigation or a manual reload.
+		await goto(resolve('/konference'), { invalidateAll: true });
 	}
 </script>
 
@@ -86,6 +95,9 @@
 							bind:value={password}
 							required
 						/>
+						<p class="text-xs text-muted-foreground">
+							Alespoň 8 znaků, velké písmeno, číslice a speciální znak.
+						</p>
 					</div>
 					<div class="flex flex-col gap-1.5">
 						<Label for="passwordConfirm">Heslo znovu</Label>
