@@ -182,11 +182,11 @@
 		<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 			{#each data.conferences as conference, i (conference.id)}
 				<div
-					class={!playIntro
+					class="h-full {!playIntro
 						? ''
 						: recentVisible
 							? 'animate-in duration-700 fill-mode-both fade-in slide-in-from-top-4'
-							: 'opacity-0'}
+							: 'opacity-0'}"
 					style:animation-delay={playIntro && recentVisible ? `${150 + i * 80}ms` : undefined}
 				>
 					<ConferenceCard {conference} />
