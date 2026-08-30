@@ -3,6 +3,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import { Empty, EmptyDescription } from '$lib/components/ui/empty';
 	import { Spinner } from '$lib/components/ui/spinner';
+	import { formatPragueDateTime } from '$lib/prague-time';
 	import {
 		Table,
 		TableBody,
@@ -73,7 +74,7 @@
 					{#each entries as entry (entry.id)}
 						<TableRow>
 							<TableCell class="whitespace-nowrap">
-								{new Date(entry.createdAt).toLocaleString('cs-CZ')}
+								{formatPragueDateTime(entry.createdAt)}
 							</TableCell>
 							<TableCell>{entry.conferenceTitle}</TableCell>
 							<TableCell>{entry.userEmail ?? 'Anonym'}</TableCell>

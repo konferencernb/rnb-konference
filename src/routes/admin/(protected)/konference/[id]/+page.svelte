@@ -6,6 +6,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { NativeSelect, NativeSelectOption } from '$lib/components/ui/native-select';
+	import { formatPragueDatetimeLocal } from '$lib/prague-time';
 	import RichTextEditor from '$lib/components/rich-text-editor.svelte';
 	import type { ActionData, PageData } from './$types';
 
@@ -13,13 +14,6 @@
 	let submitting = $state(false);
 	let description = $state(data.conference.description ?? '');
 	let status = $state(data.conference.status);
-
-	function toDatetimeLocal(value: string | Date | null) {
-		if (!value) return '';
-		const date = new Date(value);
-		const pad = (n: number) => String(n).padStart(2, '0');
-		return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-	}
 </script>
 
 <form
@@ -91,7 +85,7 @@
 						id="startsAt"
 						name="startsAt"
 						type="datetime-local"
-						value={toDatetimeLocal(data.conference.startsAt)}
+						value={formatPragueDatetimeLocal(data.conference.startsAt)}
 					/>
 				</div>
 				<div class="flex flex-col gap-1.5">

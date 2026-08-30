@@ -21,6 +21,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Popover, PopoverContent, PopoverTrigger } from '$lib/components/ui/popover';
 	import { Button } from '$lib/components/ui/button';
+	import { formatPragueDate } from '$lib/prague-time';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -169,7 +170,7 @@
 								<h3 class="font-semibold">{grant.userDisplayName}</h3>
 							</div>
 							<p class="text-sm text-muted-foreground">
-								Přiděleno: {new Date(grant.grantedAt).toLocaleDateString('cs-CZ')}
+								Přiděleno: {formatPragueDate(grant.grantedAt)}
 							</p>
 						</div>
 						<AlertDialog>

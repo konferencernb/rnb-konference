@@ -2,7 +2,9 @@ import { fail } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { conference, conferenceStatus } from '$lib/server/db/schema';
+import { parsePragueDatetimeLocal } from '$lib/server/prague-time';
 import { sanitizeDescription } from '$lib/server/sanitize';
+import { getYoutubeVideoId } from '$lib/youtube';
 import type { Actions } from './$types';
 
 export const actions: Actions = {
@@ -25,6 +27,13 @@ export const actions: Actions = {
 				error: 'YouTube URL je povinné, pokud konference není ve stavu „Připravuje se“.'
 			});
 		}
+		// See the identical check in konference/new/+page.server.ts for why —
+		// the player has no error handling for an unparseable video id, so a
+		// bad link would otherwise save fine and silently show a broken
+		// player to paying customers.
+		if (videoUrl && !getYoutubeVideoId(videoUrl)) {
+			return fail(400, { error: 'Neplatná YouTube URL — zkontrolujte prosím odkaz.' });
+		}
 		const price = Number(priceRaw);
 		if (!priceRaw || Number.isNaN(price) || price < 0) {
 			return fail(400, { error: 'Cena musí být kladné číslo.' });
@@ -38,7 +47,7 @@ export const actions: Actions = {
 				price,
 				videoUrl: videoUrl || null,
 				status: status as (typeof conferenceStatus)[number],
-				startsAt: startsAtRaw ? new Date(startsAtRaw) : null
+				startsAt: startsAtRaw ? parsePragueDatetimeLocal(startsAtRaw) : null
 			})
 			.where(eq(conference.id, params.id));
 

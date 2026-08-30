@@ -3,8 +3,11 @@ import { env } from '$env/dynamic/private';
 import { betterAuth } from 'better-auth/minimal';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
+import { and, eq } from 'drizzle-orm';
 import { getRequestEvent } from '$app/server';
 import { db } from '$lib/server/db';
+import { user as userTable, userInvite } from '$lib/server/db/schema';
+import { sendPasswordResetEmail } from '$lib/server/email';
 
 export const auth = betterAuth({
 	baseURL: env.ORIGIN,
@@ -23,7 +26,48 @@ export const auth = betterAuth({
 	// email+password); sign-up is disabled at the API level too, not just by
 	// removing the /registrace page — customers are now only ever created via
 	// an admin-sent invite (see $lib/server/invites.ts), never self-serve.
-	emailAndPassword: { enabled: true, disableSignUp: true },
+	emailAndPassword: {
+		enabled: true,
+		disableSignUp: true,
+		sendResetPassword: async ({ user, token }) => {
+			// The `user` this callback receives is typed from the base schema,
+			// without additionalFields (firstName/lastName) — that augmentation
+			// only applies to consumers of the *client's* inferred session type,
+			// not to a callback living inside the same config that defines it.
+			// Look the row up directly instead of casting.
+			const [found] = await db.select().from(userTable).where(eq(userTable.id, user.id));
+
+			// Plain template off `token`, not the `url` better-auth hands us here
+			// (which points at its own /api/auth/reset-password/:token redirect
+			// helper) — same reasoning as invites.ts: an email link is built as a
+			// direct string, never via a request-relative helper, and here that
+			// means going straight to our own page instead of better-auth's.
+			const resetUrl = `${env.ORIGIN}/obnoveni-hesla/${token}`;
+			await sendPasswordResetEmail(
+				user.email,
+				found?.firstName ?? null,
+				found?.lastName ?? null,
+				resetUrl
+			);
+		},
+		// A customer can end up setting their password for the first time via
+		// "Zapomenuté heslo" instead of the invite-completion link (e.g. they
+		// lost the invite email) — better-auth's reset-password endpoint
+		// happily creates the credential account and lets them sign in either
+		// way, but knows nothing about our own status/registeredAt bookkeeping.
+		// This keeps that bookkeeping correct regardless of which path they
+		// used, and clears out the now-redundant invite token so it can't also
+		// be completed later — completeInvite() would otherwise try to create
+		// a second credential account for the same user and hit the unique
+		// (issuer, accountId) index.
+		onPasswordReset: async ({ user }) => {
+			await db
+				.update(userTable)
+				.set({ status: 'active', registeredAt: new Date() })
+				.where(and(eq(userTable.id, user.id), eq(userTable.status, 'invited')));
+			await db.delete(userInvite).where(eq(userInvite.userId, user.id));
+		}
+	},
 	user: {
 		additionalFields: {
 			role: {

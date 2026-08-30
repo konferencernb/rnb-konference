@@ -15,6 +15,7 @@
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Empty, EmptyDescription } from '$lib/components/ui/empty';
 	import { Separator } from '$lib/components/ui/separator';
+	import { formatPragueDateTime } from '$lib/prague-time';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -121,7 +122,7 @@
 										<p class="truncate text-sm font-medium">{conf.title}</p>
 										{#if conf.startsAt}
 											<p class="text-xs text-muted-foreground">
-												{new Date(conf.startsAt).toLocaleString('cs-CZ')}
+												{formatPragueDateTime(conf.startsAt)}
 											</p>
 										{/if}
 									</div>

@@ -159,6 +159,31 @@ export async function getLiveViewers(conferenceId: string) {
 	}));
 }
 
+export async function getRecordedViewers(conferenceId: string) {
+	const rows = await db
+		.select({
+			userId: watchSession.userId,
+			name: user.name,
+			firstName: user.firstName,
+			lastName: user.lastName,
+			email: user.email,
+			recordedWatchSeconds: watchSession.recordedWatchSeconds
+		})
+		.from(watchSession)
+		.innerJoin(user, eq(watchSession.userId, user.id))
+		.where(
+			and(eq(watchSession.conferenceId, conferenceId), gt(watchSession.recordedWatchSeconds, 0))
+		)
+		.orderBy(desc(watchSession.recordedWatchSeconds));
+
+	return rows.map((row) => ({
+		userId: row.userId,
+		displayName: formatCustomerName(row),
+		email: row.email,
+		recordedWatchSeconds: row.recordedWatchSeconds
+	}));
+}
+
 // Everyone who *has access* to the conference (not just those who've watched)
 // — grant, name/email, whether they've ever watched, and whether they're
 // online right now. This is what "celkem sledujících" shows: a full roster
@@ -226,13 +251,21 @@ export async function getAllExpectedViewersWithStatus(conferenceId: string) {
 // events (not from watchSession's cumulative rows — see the comment on
 // watchHeartbeat for why that distinction matters here).
 //
-// The timeline always runs from the first heartbeat through *now* — not just
-// through the last bucket that had activity — with gaps filled in as zero.
-// Otherwise a chart checked well after everyone left would still show its
-// last real point (e.g. "1 viewer") as if that were still current, instead
-// of the drop back to 0. The bucket width adapts to the total span so a
-// conference watched on and off over days doesn't return thousands of points.
-export async function getViewerTimeline(conferenceId: string, options?: { isLive?: boolean }) {
+// While the conference is still live, the timeline runs from the first
+// heartbeat through *now* (not just through the last bucket that had
+// activity) with gaps filled in as zero — otherwise a chart checked well
+// after everyone left would still show its last real point (e.g. "1 viewer")
+// as if that were still current, instead of the drop back to 0. Once the
+// conference has ended, though, "now" could be days or weeks past the actual
+// stream — extending the timeline that far would just pad it with a long
+// flat tail of zeros, so `extendToNow: false` caps it at the last heartbeat
+// instead, keeping the chart scoped to when the stream actually happened.
+// The bucket width adapts to the total span so a conference watched on and
+// off over days doesn't return thousands of points.
+export async function getViewerTimeline(
+	conferenceId: string,
+	options?: { isLive?: boolean; extendToNow?: boolean }
+) {
 	const scope =
 		options?.isLive === undefined
 			? eq(watchHeartbeat.conferenceId, conferenceId)
@@ -241,20 +274,23 @@ export async function getViewerTimeline(conferenceId: string, options?: { isLive
 					eq(watchHeartbeat.isLive, options.isLive)
 				);
 
-	const [{ minSeenAt }] = await db
-		.select({ minSeenAt: sql<string | null>`min(${watchHeartbeat.seenAt})` })
+	const [{ minSeenAt, maxSeenAt }] = await db
+		.select({
+			minSeenAt: sql<string | null>`min(${watchHeartbeat.seenAt})`,
+			maxSeenAt: sql<string | null>`max(${watchHeartbeat.seenAt})`
+		})
 		.from(watchHeartbeat)
 		.where(scope);
 
-	if (!minSeenAt) return [];
+	if (!minSeenAt || !maxSeenAt) return [];
 
 	const startMs = new Date(minSeenAt).getTime();
-	const nowMs = Date.now();
+	const endMs = options?.extendToNow === false ? new Date(maxSeenAt).getTime() : Date.now();
 	const targetPoints = 180;
 	const oneMinuteMs = 60_000;
 	const bucketMs = Math.max(
 		oneMinuteMs,
-		Math.ceil(Math.max(oneMinuteMs, nowMs - startMs) / targetPoints / oneMinuteMs) * oneMinuteMs
+		Math.ceil(Math.max(oneMinuteMs, endMs - startMs) / targetPoints / oneMinuteMs) * oneMinuteMs
 	);
 	const bucketSeconds = bucketMs / 1000;
 
@@ -282,7 +318,7 @@ export async function getViewerTimeline(conferenceId: string, options?: { isLive
 	}
 
 	const firstBucket = Math.floor(startMs / bucketMs) * bucketMs;
-	const lastBucket = Math.floor(nowMs / bucketMs) * bucketMs;
+	const lastBucket = Math.floor(endMs / bucketMs) * bucketMs;
 
 	const timeline: { bucket: Date; viewers: number }[] = [];
 	for (let t = firstBucket; t <= lastBucket; t += bucketMs) {

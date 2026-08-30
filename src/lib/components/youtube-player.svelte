@@ -3,6 +3,7 @@
 	import Minimize from '@lucide/svelte/icons/minimize';
 	import Pause from '@lucide/svelte/icons/pause';
 	import Play from '@lucide/svelte/icons/play';
+	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
 	import Volume2 from '@lucide/svelte/icons/volume-2';
 	import VolumeX from '@lucide/svelte/icons/volume-x';
 	import { getYoutubeVideoId } from '$lib/youtube';
@@ -48,6 +49,10 @@
 	let isFullscreen = $state(false);
 	let showControls = $state(true);
 	let hideTimer: ReturnType<typeof setTimeout> | undefined;
+	// Set either up front (an unparseable URL never reaches YT.Player at all)
+	// or from the player's own onError — without this the black box just sits
+	// there doing nothing when clicked, with no indication anything's wrong.
+	let playbackError = $state(!getYoutubeVideoId(videoUrl));
 
 	function scheduleHide() {
 		if (hideTimer) clearTimeout(hideTimer);
@@ -75,7 +80,7 @@
 	});
 
 	$effect(() => {
-		if (!target) return;
+		if (!target || playbackError) return;
 		let cancelled = false;
 		let pollHandle: ReturnType<typeof setInterval> | undefined;
 
@@ -106,6 +111,11 @@
 					},
 					onStateChange: (event: YT.OnStateChangeEvent) => {
 						playing = event.data === YT.PlayerState.PLAYING;
+					},
+					// Error codes: 2 invalid videoId, 5 HTML5 player error, 100 video
+					// not found/removed/private, 101/150 embedding disabled by owner.
+					onError: () => {
+						playbackError = true;
 					}
 				}
 			});
@@ -187,87 +197,99 @@
 >
 	<div bind:this={target} class="pointer-events-none h-full w-full"></div>
 
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div
-		class="absolute inset-0 flex cursor-pointer items-center justify-center {playing
-			? ''
-			: 'bg-black'}"
-		oncontextmenu={(event) => event.preventDefault()}
-		onclick={togglePlay}
-	>
-		{#if !playing}
-			<Play class="size-16 text-white/90" />
-		{/if}
-	</div>
-
-	<div
-		class="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-linear-to-t from-black/80 to-transparent px-3 pt-6 pb-2 transition-opacity duration-300 {showControls
-			? 'opacity-100'
-			: 'pointer-events-none opacity-0'}"
-	>
-		{#if !isLive}
-			<input
-				type="range"
-				min="0"
-				max={duration || 0}
-				step="1"
-				value={currentTime}
-				oninput={onSeekInput}
-				class="h-1 w-full cursor-pointer accent-white"
-				aria-label="Průběh přehrávání"
-			/>
-		{/if}
-		<div class="flex items-center gap-3 text-white">
-			<button
-				type="button"
-				onclick={togglePlay}
-				class="cursor-pointer"
-				aria-label={playing ? 'Pauza' : 'Přehrát'}
-			>
-				{#if playing}
-					<Pause class="size-5" />
-				{:else}
-					<Play class="size-5" />
-				{/if}
-			</button>
-			<button
-				type="button"
-				onclick={toggleMute}
-				class="cursor-pointer"
-				aria-label={muted ? 'Zapnout zvuk' : 'Ztlumit'}
-			>
-				{#if muted || volume === 0}
-					<VolumeX class="size-5" />
-				{:else}
-					<Volume2 class="size-5" />
-				{/if}
-			</button>
-			<input
-				type="range"
-				min="0"
-				max="100"
-				step="1"
-				value={muted ? 0 : volume}
-				oninput={onVolumeInput}
-				class="h-1 w-20 cursor-pointer accent-white"
-				aria-label="Hlasitost"
-			/>
-			{#if !isLive}
-				<span class="text-xs tabular-nums">{formatTime(currentTime)} / {formatTime(duration)}</span>
-			{/if}
-			<button
-				type="button"
-				onclick={toggleFullscreen}
-				class="ml-auto cursor-pointer"
-				aria-label={isFullscreen ? 'Ukončit celou obrazovku' : 'Celá obrazovka'}
-			>
-				{#if isFullscreen}
-					<Minimize class="size-5" />
-				{:else}
-					<Maximize class="size-5" />
-				{/if}
-			</button>
+	{#if playbackError}
+		<div
+			class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black px-6 text-center"
+		>
+			<TriangleAlert class="size-8 text-white/70" />
+			<p class="font-medium text-white">Přenos se nepodařilo načíst</p>
+			<p class="text-sm text-white/60">Zkuste to prosím později, nebo nás kontaktujte.</p>
 		</div>
-	</div>
+	{:else}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="absolute inset-0 flex cursor-pointer items-center justify-center {playing
+				? ''
+				: 'bg-black'}"
+			oncontextmenu={(event) => event.preventDefault()}
+			onclick={togglePlay}
+		>
+			{#if !playing}
+				<Play class="size-16 text-white/90" />
+			{/if}
+		</div>
+
+		<div
+			class="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-linear-to-t from-black/80 to-transparent px-3 pt-6 pb-2 transition-opacity duration-300 {showControls
+				? 'opacity-100'
+				: 'pointer-events-none opacity-0'}"
+		>
+			{#if !isLive}
+				<input
+					type="range"
+					min="0"
+					max={duration || 0}
+					step="1"
+					value={currentTime}
+					oninput={onSeekInput}
+					class="h-1 w-full cursor-pointer accent-white"
+					aria-label="Průběh přehrávání"
+				/>
+			{/if}
+			<div class="flex items-center gap-3 text-white">
+				<button
+					type="button"
+					onclick={togglePlay}
+					class="cursor-pointer"
+					aria-label={playing ? 'Pauza' : 'Přehrát'}
+				>
+					{#if playing}
+						<Pause class="size-5" />
+					{:else}
+						<Play class="size-5" />
+					{/if}
+				</button>
+				<button
+					type="button"
+					onclick={toggleMute}
+					class="cursor-pointer"
+					aria-label={muted ? 'Zapnout zvuk' : 'Ztlumit'}
+				>
+					{#if muted || volume === 0}
+						<VolumeX class="size-5" />
+					{:else}
+						<Volume2 class="size-5" />
+					{/if}
+				</button>
+				<input
+					type="range"
+					min="0"
+					max="100"
+					step="1"
+					value={muted ? 0 : volume}
+					oninput={onVolumeInput}
+					class="h-1 w-20 cursor-pointer accent-white"
+					aria-label="Hlasitost"
+				/>
+				{#if !isLive}
+					<span class="text-xs tabular-nums"
+						>{formatTime(currentTime)} / {formatTime(duration)}</span
+					>
+				{/if}
+				<button
+					type="button"
+					onclick={toggleFullscreen}
+					class="ml-auto cursor-pointer"
+					aria-label={isFullscreen ? 'Ukončit celou obrazovku' : 'Celá obrazovka'}
+				>
+					{#if isFullscreen}
+						<Minimize class="size-5" />
+					{:else}
+						<Maximize class="size-5" />
+					{/if}
+				</button>
+			</div>
+		</div>
+	{/if}
 </div>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Empty, EmptyDescription } from '$lib/components/ui/empty';
+	import { formatPragueDate, formatPragueTime } from '$lib/prague-time';
 
 	let {
 		data,
@@ -67,9 +68,9 @@
 
 	function formatTime(time: number) {
 		if (granularity === 'day') {
-			return new Date(time).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' });
+			return formatPragueDate(time, { day: 'numeric', month: 'numeric' });
 		}
-		return new Date(time).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+		return formatPragueTime(time, { hour: '2-digit', minute: '2-digit' });
 	}
 
 	const xTickTimes = $derived.by(() => {
@@ -108,7 +109,7 @@
 		<EmptyDescription>Zatím nejsou žádná data o sledování v čase.</EmptyDescription>
 	</Empty>
 {:else}
-	<div bind:clientWidth={containerWidth} class="relative w-full">
+	<div bind:clientWidth={containerWidth} class="relative w-full min-w-0">
 		<svg
 			width={containerWidth}
 			{height}

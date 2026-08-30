@@ -54,6 +54,40 @@ export async function sendAccessGrantedEmail(
 	});
 }
 
+export async function sendPasswordResetEmail(
+	to: string,
+	firstName: string | null,
+	lastName: string | null,
+	resetUrl: string
+) {
+	const transport = getTransport();
+	const fullName = [firstName, lastName].filter(Boolean).join(' ');
+	const greeting = fullName ? `Dobrý den, ${fullName}` : 'Dobrý den';
+
+	if (!transport) {
+		console.warn('SMTP not configured — skipping password-reset email to', to);
+		return;
+	}
+
+	await transport.sendMail({
+		from: env.SMTP_FROM,
+		to,
+		subject: 'Obnovení hesla — Online konference Nemocnice Beroun',
+		text: `${greeting},\n\npožádali jste o obnovení hesla. Nové heslo si nastavte na odkazu níže — platí 1 hodinu:\n\n${resetUrl}\n\nPokud jste o obnovení hesla nežádali, tento e-mail můžete ignorovat — vaše heslo zůstane beze změny.\n\nV případě problémů se obraťte na community@nember.cz.`,
+		html: renderEmailLayout({
+			preheader: 'Obnovte si heslo — odkaz platí 1 hodinu.',
+			heading: 'Obnovení hesla',
+			bodyHtml: `
+				<p style="margin: 0 0 14px;">${escapeEmailText(greeting)},</p>
+				<p style="margin: 0 0 14px;">požádali jste o obnovení hesla k účtu na platformě Online konference Nemocnice Beroun. Tlačítkem níže si nastavte nové heslo — odkaz je platný <strong>1 hodinu</strong>.</p>
+				<p style="margin: 0;">Pokud jste o obnovení hesla nežádali, tento e-mail můžete ignorovat — vaše heslo zůstane beze změny.</p>
+			`,
+			ctaLabel: 'Nastavit nové heslo',
+			ctaUrl: resetUrl
+		})
+	});
+}
+
 export async function sendInviteEmail(
 	to: string,
 	firstName: string | null,

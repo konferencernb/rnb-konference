@@ -22,6 +22,7 @@
 	import { buttonVariants } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import ConferenceStatusBadge from '$lib/components/conference-status-badge.svelte';
+	import { formatPragueDate } from '$lib/prague-time';
 	import { getYoutubeThumbnailUrl } from '$lib/youtube';
 
 	type Status = 'upcoming' | 'live' | 'ended';
@@ -108,7 +109,7 @@
 			<div class="flex items-center justify-between gap-2">
 				<span class="flex items-center gap-1.5 text-sm text-muted-foreground">
 					<Calendar class="size-4" />
-					{conference.startsAt ? new Date(conference.startsAt).toLocaleDateString('cs-CZ') : '—'}
+					{conference.startsAt ? formatPragueDate(conference.startsAt) : '—'}
 				</span>
 				<ConferenceStatusBadge status={conference.status} />
 			</div>

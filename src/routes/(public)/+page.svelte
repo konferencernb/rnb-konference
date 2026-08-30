@@ -110,7 +110,7 @@
 		<FeatureCard
 			icon={MonitorPlay}
 			title="Live i záznam"
-			description="Sledujte online v reálném čase, nebo si přednášku pusťte kdykoliv později ze záznamu."
+			description="Sledujte stream živě, nebo si přednášku pusťte kdykoliv později ze záznamu."
 		/>
 		<FeatureCard
 			icon={Archive}

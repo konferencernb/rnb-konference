@@ -44,7 +44,15 @@
 					<Input id="email" type="email" autocomplete="email" bind:value={email} required />
 				</div>
 				<div class="flex flex-col gap-1.5">
-					<Label for="password">Heslo</Label>
+					<div class="flex items-center justify-between">
+						<Label for="password">Heslo</Label>
+						<a
+							href={resolve('/zapomenute-heslo')}
+							class="text-xs text-muted-foreground hover:text-foreground hover:underline"
+						>
+							Zapomenuté heslo?
+						</a>
+					</div>
 					<Input
 						id="password"
 						type="password"

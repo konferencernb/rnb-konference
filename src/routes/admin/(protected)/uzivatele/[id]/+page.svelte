@@ -11,6 +11,7 @@
 	import Search from '@lucide/svelte/icons/search';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { formatCustomerName } from '$lib/format-name';
+	import { formatPragueDate } from '$lib/prague-time';
 	import {
 		AlertDialog,
 		AlertDialogAction,
@@ -41,7 +42,7 @@
 	let deleteDialogOpen = $state(false);
 
 	function formatConferenceDate(startsAt: string | Date | null) {
-		return startsAt ? new Date(startsAt).toLocaleDateString('cs-CZ') : '';
+		return startsAt ? formatPragueDate(startsAt) : '';
 	}
 
 	// PopoverTrigger's props include onclick/onkeydown meant for a button trigger
@@ -93,14 +94,12 @@
 			<p class="text-muted-foreground">{data.customer.email}</p>
 			{#if data.customer.status === 'invited'}
 				<p class="mt-1 text-sm text-muted-foreground">
-					Pozvánka odeslána {new Date(data.customer.createdAt).toLocaleDateString('cs-CZ')}, čeká na
-					dokončení registrace.
+					Pozvánka odeslána {formatPragueDate(data.customer.createdAt)}, čeká na dokončení
+					registrace.
 				</p>
 			{:else}
 				<p class="mt-1 text-sm text-muted-foreground">
-					Registrace: {new Date(
-						data.customer.registeredAt ?? data.customer.createdAt
-					).toLocaleDateString('cs-CZ')}
+					Registrace: {formatPragueDate(data.customer.registeredAt ?? data.customer.createdAt)}
 				</p>
 			{/if}
 			<AlertDialog bind:open={deleteDialogOpen}>
@@ -260,7 +259,7 @@
 									)}
 									<span aria-hidden="true">|</span>
 									<CalendarPlus class="size-3.5" />
-									Přiděleno: {new Date(grant.grantedAt).toLocaleDateString('cs-CZ')}
+									Přiděleno: {formatPragueDate(grant.grantedAt)}
 								</p>
 							</div>
 							<AlertDialog>
