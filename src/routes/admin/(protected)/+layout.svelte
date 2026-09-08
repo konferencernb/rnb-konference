@@ -73,7 +73,12 @@
 								class="data-active:bg-primary/10 data-active:text-primary data-active:hover:bg-primary/15 data-active:hover:text-primary"
 							>
 								{#snippet child({ props })}
-									<a href={link.href} {...props}>
+									<!-- The tooltip trigger's props assume a <button> and include
+									type="button", which isn't a valid attribute on <a> — drop it
+									before spreading the rest onto the actual link element. -->
+									<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructured only to exclude it from anchorProps -->
+									{@const { type, ...anchorProps } = props}
+									<a href={link.href} {...anchorProps}>
 										<link.icon />
 										<span>{link.label}</span>
 									</a>
@@ -117,8 +122,10 @@
 		<header class="flex items-center gap-2 border-b bg-background px-4 py-2">
 			<SidebarTrigger />
 		</header>
-		<main class="flex-1 bg-muted/30">
+		<!-- SidebarInset already renders the page's <main> landmark — a nested
+		second one isn't valid HTML and confuses screen-reader navigation. -->
+		<div class="flex-1 bg-muted/30">
 			{@render children()}
-		</main>
+		</div>
 	</SidebarInset>
 </SidebarProvider>

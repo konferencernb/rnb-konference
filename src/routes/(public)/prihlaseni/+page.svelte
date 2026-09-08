@@ -25,7 +25,11 @@
 			return;
 		}
 
-		await goto(resolve('/konference'));
+		// invalidateAll so the navbar picks up the freshly created session
+		// immediately — without it the root layout's `data.user` stays stale
+		// (still logged-out) until the next unrelated navigation or a manual
+		// reload, same reasoning as the invite-completion flow.
+		await goto(resolve('/konference'), { invalidateAll: true });
 	}
 </script>
 

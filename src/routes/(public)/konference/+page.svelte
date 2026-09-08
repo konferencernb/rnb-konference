@@ -55,6 +55,7 @@
 </section>
 
 <section class="mx-auto max-w-6xl px-6 py-12">
+	<h2 class="sr-only">Seznam konferencí</h2>
 	{#if conferences.length === 0}
 		<Empty class="border border-dashed">
 			<EmptyDescription>Zatím nejsou vypsané žádné konference.</EmptyDescription>

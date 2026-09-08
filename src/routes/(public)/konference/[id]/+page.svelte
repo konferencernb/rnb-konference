@@ -67,9 +67,11 @@
 </script>
 
 <div class="mx-auto max-w-4xl px-6 py-12">
-	<div class="mb-6 flex items-center justify-between gap-4">
-		<h1 class="text-2xl font-bold">{data.conference.title}</h1>
-		<ConferenceStatusBadge status={data.conference.status} />
+	<div class="mb-6 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+		<h1 class="order-2 text-xl font-bold sm:order-0 sm:text-2xl">{data.conference.title}</h1>
+		<div class="order-1 sm:order-0">
+			<ConferenceStatusBadge status={data.conference.status} />
+		</div>
 	</div>
 
 	{#if data.unlocked && 'videoUrl' in data.conference && data.conference.videoUrl}

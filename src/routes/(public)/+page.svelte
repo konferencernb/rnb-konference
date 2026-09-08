@@ -46,7 +46,9 @@
 	class="relative overflow-hidden"
 	style="background-image: radial-gradient(ellipse 75% 100% at 75% 45%, var(--hero-to) 0%, var(--hero-via) 50%, var(--hero-from) 100%);"
 >
-	<div class="mx-auto grid max-w-6xl gap-10 px-6 py-20 lg:grid-cols-[1fr_1.3fr] lg:items-center">
+	<div
+		class="mx-auto grid max-w-6xl gap-10 px-6 pt-20 pb-10 sm:pb-20 lg:grid-cols-[1fr_1.3fr] lg:items-center"
+	>
 		<div class="flex flex-col gap-6 text-hero-foreground">
 			<Badge
 				variant="outline"
@@ -83,7 +85,7 @@
 			</div>
 		</div>
 		<div
-			class="relative flex items-center justify-center {playIntro
+			class="relative hidden items-center justify-center sm:flex {playIntro
 				? 'animate-in delay-150 duration-700 fade-in slide-in-from-top-4'
 				: ''}"
 		>
@@ -100,8 +102,34 @@
 	</div>
 </section>
 
-<section class="mx-auto max-w-6xl px-6 py-16">
-	<div class="grid gap-6 sm:grid-cols-3">
+<section class="mx-auto max-w-6xl px-6 pt-10 pb-16 sm:py-16">
+	<div class="grid grid-cols-3 gap-4 sm:hidden">
+		<div class="flex flex-col items-center gap-2 text-center">
+			<div
+				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-primary to-primary/70 text-primary-foreground"
+			>
+				<ShieldCheck class="size-5" />
+			</div>
+			<p class="text-xs font-medium">Bezpečný přístup</p>
+		</div>
+		<div class="flex flex-col items-center gap-2 text-center">
+			<div
+				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-primary to-primary/70 text-primary-foreground"
+			>
+				<MonitorPlay class="size-5" />
+			</div>
+			<p class="text-xs font-medium">Live i záznam</p>
+		</div>
+		<div class="flex flex-col items-center gap-2 text-center">
+			<div
+				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-primary to-primary/70 text-primary-foreground"
+			>
+				<Archive class="size-5" />
+			</div>
+			<p class="text-xs font-medium">Přístup navždy</p>
+		</div>
+	</div>
+	<div class="hidden gap-6 sm:grid sm:grid-cols-3">
 		<FeatureCard
 			icon={ShieldCheck}
 			title="Bezpečný přístup"
@@ -115,7 +143,7 @@
 		<FeatureCard
 			icon={Archive}
 			title="Přístup navždy"
-			description="Jednou zakoupené konference vám zůstávají k dispozici — bez expirace, bez omezení."
+			description="Jednou zakoupené konference vám zůstávají k dispozici, bez expirace a bez omezení."
 		/>
 	</div>
 </section>
@@ -123,20 +151,31 @@
 <section use:revealOnScroll={(v) => (obsahVisible = v)} class="mx-auto max-w-6xl px-6 pb-20">
 	<div class="grid items-center gap-10 lg:grid-cols-2">
 		<div
-			class="relative aspect-4/3 overflow-hidden rounded-2xl {!playIntro
+			class="relative {!playIntro
 				? ''
 				: obsahVisible
 					? 'animate-in duration-700 fade-in slide-in-from-left-8'
 					: 'opacity-0'}"
 		>
-			<img
-				src="/images/prednaska.png"
-				alt="Přednáška pro zdravotnický personál v Nemocnici Beroun"
-				class="h-full w-full object-cover"
-			/>
+			<div class="relative aspect-4/3 overflow-hidden rounded-2xl">
+				<img
+					src="/images/prednaska.png"
+					alt="Přednáška pro zdravotnický personál v Nemocnici Beroun"
+					class="h-full w-full object-cover"
+				/>
+				<div
+					class="absolute inset-0 bg-linear-to-tl from-primary/40 via-primary/10 to-transparent"
+				></div>
+			</div>
 			<div
-				class="absolute inset-0 bg-linear-to-tl from-primary/40 via-primary/10 to-transparent"
-			></div>
+				class="absolute -right-6 -bottom-6 hidden aspect-4/3 w-2/5 overflow-hidden rounded-xl border-4 border-background shadow-lg sm:block"
+			>
+				<img
+					src="/images/prednaska2.png"
+					alt="Diskusní panel odborníků na konferenci Nemocnice Beroun"
+					class="h-full w-full object-cover"
+				/>
+			</div>
 		</div>
 		<div
 			class="flex flex-col gap-4 {!playIntro
@@ -154,9 +193,9 @@
 				praxe.
 			</p>
 			<p class="text-muted-foreground">
-				Přednášky2 připravují a vedou lékaři a odborníci přímo z Nemocnice Beroun. Obsah je určený
-				pro zdravotnický personál, který si chce doplnit a prohloubit odborné znalosti přímo z
-				praxe.
+				Součástí programu jsou i diskusní panely s vedoucími lékaři a zástupci nemocnic, kde se
+				probírají aktuální témata zdravotnictví, od odborné praxe až po provoz a financování
+				nemocnic. Záznam si pak můžete pustit i zpětně, kdykoliv se vám to bude hodit.
 			</p>
 		</div>
 	</div>

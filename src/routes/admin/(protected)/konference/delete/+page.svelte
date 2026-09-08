@@ -15,6 +15,7 @@
 		</p>
 	</div>
 
+	<h2 class="sr-only">Seznam deaktivovaných konferencí</h2>
 	{#if data.conferences.length === 0}
 		<Empty class="border border-dashed bg-card">
 			<EmptyDescription>Žádná konference není deaktivovaná.</EmptyDescription>
