@@ -30,6 +30,7 @@
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
 		"@tailwindcss/vite": "^4.3.0",
 		"@types/node": "^24",
+		"@types/nodemailer": "^8.0.1",
 		"auth": "^1.6.23",
 		"better-auth": "^1.6.23",
 		"bits-ui": "^2.16.3",
@@ -71,6 +72,7 @@
 		"@tiptap/extension-subscript": "^3.30.5",
 		"@tiptap/extension-superscript": "^3.30.5",
 		"@tiptap/starter-kit": "^3.30.5",
-		"isomorphic-dompurify": "^3.23.0"
+		"isomorphic-dompurify": "^3.23.0",
+		"nodemailer": "^10.0.1"
 	}
 }
