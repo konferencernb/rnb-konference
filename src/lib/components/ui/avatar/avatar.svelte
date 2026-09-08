@@ -7,6 +7,7 @@
 		loadingStatus = $bindable('loading'),
 		size = 'default',
 		class: className,
+		children,
 		...restProps
 	}: AvatarPrimitive.RootProps & {
 		size?: 'default' | 'sm' | 'lg';
@@ -23,4 +24,14 @@
 		className
 	)}
 	{...restProps}
-/>
+>
+	{#snippet child({ props })}
+		<!-- A plain <div> (bits-ui's default here) is invalid HTML whenever an
+		avatar sits inside a <button> (e.g. a dropdown trigger) — button's
+		content model is phrasing content only. <span> renders identically
+		but stays valid there. -->
+		<span {...props}>
+			{@render children?.()}
+		</span>
+	{/snippet}
+</AvatarPrimitive.Root>
