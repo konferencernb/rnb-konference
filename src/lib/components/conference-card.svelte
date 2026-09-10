@@ -76,7 +76,7 @@
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -- editHref is already resolve()d by the caller -->
 <div
-	class="relative block h-full rounded-xl transition duration-300 ease-out hover:-translate-y-1 hover:shadow-md"
+	class="relative block h-full rounded-xl transition duration-300 ease-out focus-within:-translate-y-1 focus-within:shadow-md hover:-translate-y-1 hover:shadow-md"
 >
 	{#if !restoreAction}
 		<a
@@ -151,7 +151,7 @@
 						{...props}
 						type="button"
 						aria-label="Smazat konferenci"
-						class="absolute top-3 right-3 z-10 flex size-8 cursor-pointer items-center justify-center rounded-full bg-background text-foreground opacity-50 hover:opacity-100"
+						class="absolute top-3 right-3 z-10 flex size-8 cursor-pointer items-center justify-center rounded-full bg-background text-foreground opacity-50 hover:opacity-100 focus-visible:opacity-100"
 					>
 						<Trash2 class="size-4" />
 					</button>

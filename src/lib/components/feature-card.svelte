@@ -13,7 +13,7 @@
 	<CardContent class="flex flex-col gap-3">
 		<div class="flex items-center gap-3">
 			<div
-				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-primary to-primary/70 text-primary-foreground"
+				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"
 			>
 				<Icon class="size-5" />
 			</div>
