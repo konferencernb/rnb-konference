@@ -46,6 +46,7 @@
 		src="/images/prednaska.png"
 		alt=""
 		aria-hidden="true"
+		fetchpriority="high"
 		class="absolute inset-0 -z-20 size-full object-cover object-center"
 	/>
 	<!-- Blue brand wash over the photo — heavy on the left where the copy
@@ -86,18 +87,14 @@
 			</div>
 		</div>
 		<div
-			class="relative hidden items-center justify-center sm:flex {playIntro
+			class="hidden items-center justify-center sm:flex {playIntro
 				? 'animate-in delay-150 duration-700 fade-in slide-in-from-top-4'
 				: ''}"
 		>
-			<div
-				class="pointer-events-none absolute top-2 -left-6 aspect-square w-2/3 rounded-3xl bg-hero-foreground/10 sm:top-4 sm:-left-8"
-				aria-hidden="true"
-			></div>
 			<img
 				src="/images/banner2.png"
 				alt="Ukázka přehrávače se živým přenosem a záznamem přednášek na notebooku a telefonu"
-				class="relative w-full max-w-5xl drop-shadow-2xl"
+				class="w-full max-w-5xl drop-shadow-2xl"
 			/>
 		</div>
 	</div>
@@ -163,6 +160,8 @@
 				<img
 					src="/images/prednaska.png"
 					alt="Přednáška pro zdravotnický personál v Rehabilitační Nemocnici Beroun"
+					loading="lazy"
+					decoding="async"
 					class="h-full w-full object-cover"
 				/>
 				<div
@@ -175,6 +174,8 @@
 				<img
 					src="/images/prednaska2.png"
 					alt="Diskusní panel odborníků na konferenci Rehabilitační Nemocnice Beroun"
+					loading="lazy"
+					decoding="async"
 					class="h-full w-full object-cover"
 				/>
 			</div>
