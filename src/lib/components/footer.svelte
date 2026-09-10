@@ -12,6 +12,8 @@
 				<img
 					src="/logo-rnb-full.svg"
 					alt="Rehabilitační Nemocnice Beroun"
+					loading="lazy"
+					decoding="async"
 					class="h-8 w-auto"
 					width="689"
 					height="132"

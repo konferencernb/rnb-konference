@@ -94,6 +94,8 @@
 				<img
 					src={thumbnailUrl}
 					alt=""
+					loading="lazy"
+					decoding="async"
 					class="h-full w-full object-cover"
 					onload={onThumbnailLoad}
 					onerror={onThumbnailError}
