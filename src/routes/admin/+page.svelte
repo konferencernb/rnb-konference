@@ -44,7 +44,7 @@
 			<div>
 				<h1 class="text-xl font-semibold">Administrace</h1>
 				<p class="text-sm text-muted-foreground">
-					Přihlaste se pro správu online konferencí Nemocnice Beroun.
+					Přihlaste se pro správu online konferencí Rehabilitační Nemocnice Beroun.
 				</p>
 			</div>
 			<form class="flex flex-col gap-4" onsubmit={handleSubmit}>

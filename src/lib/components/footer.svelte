@@ -7,7 +7,7 @@
 		class="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-8 sm:flex-row sm:items-center sm:justify-between"
 	>
 		<div>
-			<p class="font-semibold">Nemocnice Beroun</p>
+			<p class="font-semibold">Rehabilitační Nemocnice Beroun</p>
 			<p class="text-sm text-muted-foreground">
 				Platforma pro zabezpečené online odborné konference.
 			</p>

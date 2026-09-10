@@ -48,7 +48,7 @@
 				class="size-9 rounded-lg object-contain"
 			/>
 			<span class="flex flex-col leading-tight">
-				<span class="font-semibold">Nemocnice Beroun</span>
+				<span class="font-semibold">Rehabilitační Nemocnice Beroun</span>
 				<span class="text-xs tracking-wide text-muted-foreground uppercase">Online konference</span>
 			</span>
 		</a>
@@ -111,7 +111,7 @@
 							class="size-9 rounded-lg object-contain"
 						/>
 						<span class="flex flex-col leading-tight font-normal">
-							<span class="font-semibold">Nemocnice Beroun</span>
+							<span class="font-semibold">Rehabilitační Nemocnice Beroun</span>
 							<span class="text-xs tracking-wide text-muted-foreground uppercase">
 								Online konference
 							</span>

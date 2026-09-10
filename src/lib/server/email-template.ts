@@ -93,11 +93,11 @@ export function renderEmailLayout(options: {
 					<tr>
 						${
 							LOGO_URL
-								? `<td style="width: 36px;"><img src="${LOGO_URL}" width="36" height="36" alt="Nemocnice Beroun" style="display: block; width: 36px; height: 36px; border-radius: 8px;"></td>`
+								? `<td style="width: 36px;"><img src="${LOGO_URL}" width="36" height="36" alt="Rehabilitační Nemocnice Beroun" style="display: block; width: 36px; height: 36px; border-radius: 8px;"></td>`
 								: `<td style="width: 36px; height: 36px; background-color: ${BRAND_BLUE}; border-radius: 8px; text-align: center; vertical-align: middle; font-family: Arial, Helvetica, sans-serif; font-size: 16px; font-weight: bold; color: #ffffff;">N</td>`
 						}
 						<td style="padding-left: 12px; font-family: Arial, Helvetica, sans-serif;">
-							<div style="font-size: 15px; font-weight: bold; color: ${INK}; line-height: 1.2;">Nemocnice Beroun</div>
+							<div style="font-size: 15px; font-weight: bold; color: ${INK}; line-height: 1.2;">Rehabilitační Nemocnice Beroun</div>
 							<div style="font-size: 11px; letter-spacing: 0.06em; color: ${MUTED}; text-transform: uppercase;">Online konference</div>
 						</td>
 					</tr>
@@ -117,7 +117,7 @@ export function renderEmailLayout(options: {
 		</tr>
 		<tr>
 			<td style="padding: 24px 32px 40px; text-align: center; font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 1.6; color: ${MUTED};">
-				Nemocnice Beroun — Online konference<br>
+				Rehabilitační Nemocnice Beroun — Online konference<br>
 				Tento e-mail je automatický, na tuto adresu prosím neodpovídejte.<br>
 				V případě problémů se obraťte na <a href="mailto:community@nember.cz" style="color: ${BRAND_BLUE};">community@nember.cz</a>.
 			</td>
