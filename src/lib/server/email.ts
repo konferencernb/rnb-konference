@@ -72,14 +72,14 @@ export async function sendPasswordResetEmail(
 	await transport.sendMail({
 		from: env.SMTP_FROM,
 		to,
-		subject: 'Obnovení hesla — Online konference Nemocnice Beroun',
+		subject: 'Obnovení hesla — Online konference Rehabilitační Nemocnice Beroun',
 		text: `${greeting},\n\npožádali jste o obnovení hesla. Nové heslo si nastavte na odkazu níže — platí 1 hodinu:\n\n${resetUrl}\n\nPokud jste o obnovení hesla nežádali, tento e-mail můžete ignorovat — vaše heslo zůstane beze změny.\n\nV případě problémů se obraťte na community@nember.cz.`,
 		html: renderEmailLayout({
 			preheader: 'Obnovte si heslo — odkaz platí 1 hodinu.',
 			heading: 'Obnovení hesla',
 			bodyHtml: `
 				<p style="margin: 0 0 14px;">${escapeEmailText(greeting)},</p>
-				<p style="margin: 0 0 14px;">požádali jste o obnovení hesla k účtu na platformě Online konference Nemocnice Beroun. Tlačítkem níže si nastavte nové heslo — odkaz je platný <strong>1 hodinu</strong>.</p>
+				<p style="margin: 0 0 14px;">požádali jste o obnovení hesla k účtu na platformě Online konference Rehabilitační Nemocnice Beroun. Tlačítkem níže si nastavte nové heslo — odkaz je platný <strong>1 hodinu</strong>.</p>
 				<p style="margin: 0;">Pokud jste o obnovení hesla nežádali, tento e-mail můžete ignorovat — vaše heslo zůstane beze změny.</p>
 			`,
 			ctaLabel: 'Nastavit nové heslo',
@@ -106,14 +106,14 @@ export async function sendInviteEmail(
 	await transport.sendMail({
 		from: env.SMTP_FROM,
 		to,
-		subject: 'Dokončete registraci k Nemocnice Beroun Online konference',
+		subject: 'Dokončete registraci k Rehabilitační Nemocnice Beroun Online konference',
 		text: `${greeting},\n\nzaložili jsme vám účet. Pro dokončení registrace si nastavte heslo na odkazu níže — platí 7 dní:\n\n${inviteUrl}\n\nPo dokončení se rovnou přihlásíte.\n\nV případě problémů se obraťte na community@nember.cz.`,
 		html: renderEmailLayout({
 			preheader: 'Dokončete registraci a nastavte si heslo — odkaz platí 7 dní.',
 			heading: 'Dokončete registraci',
 			bodyHtml: `
 				<p style="margin: 0 0 14px;">${escapeEmailText(greeting)},</p>
-				<p style="margin: 0 0 14px;">založili jsme vám účet na platformě Online konference Nemocnice Beroun. Pro dokončení registrace si tlačítkem níže nastavte heslo — odkaz je platný <strong>7 dní</strong>.</p>
+				<p style="margin: 0 0 14px;">založili jsme vám účet na platformě Online konference Rehabilitační Nemocnice Beroun. Pro dokončení registrace si tlačítkem níže nastavte heslo — odkaz je platný <strong>7 dní</strong>.</p>
 				<p style="margin: 0;">Po dokončení se rovnou přihlásíte.</p>
 			`,
 			ctaLabel: 'Dokončit registraci',

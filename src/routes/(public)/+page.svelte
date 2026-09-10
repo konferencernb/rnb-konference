@@ -54,15 +54,15 @@
 					? 'animate-in delay-100 duration-700 fade-in slide-in-from-top-4'
 					: ''}"
 			>
-				Online konference Nemocnice Beroun
+				Online konference Rehabilitační Nemocnice Beroun
 			</h1>
 			<p
 				class="max-w-md text-hero-foreground/80 {playIntro
 					? 'animate-in delay-200 duration-700 fade-in slide-in-from-top-4'
 					: ''}"
 			>
-				Odborné přednášky pro lékaře a zdravotnický personál. Po uhrazení účastnického poplatku vám
-				přidělíme přístup ke konkrétní konferenci.
+				Odborné přednášky pro lékaře, zdravotnický personál a veřejnost. Po uhrazení účastnického
+				poplatku vám přidělíme přístup ke konkrétní konferenci.
 			</p>
 			<div class={playIntro ? 'animate-in delay-300 duration-700 fade-in slide-in-from-top-4' : ''}>
 				<Button
@@ -152,7 +152,7 @@
 			<div class="relative aspect-4/3 overflow-hidden rounded-2xl">
 				<img
 					src="/images/prednaska.png"
-					alt="Přednáška pro zdravotnický personál v Nemocnici Beroun"
+					alt="Přednáška pro zdravotnický personál v Rehabilitační Nemocnici Beroun"
 					class="h-full w-full object-cover"
 				/>
 				<div
@@ -164,7 +164,7 @@
 			>
 				<img
 					src="/images/prednaska2.png"
-					alt="Diskusní panel odborníků na konferenci Nemocnice Beroun"
+					alt="Diskusní panel odborníků na konferenci Rehabilitační Nemocnice Beroun"
 					class="h-full w-full object-cover"
 				/>
 			</div>
@@ -177,12 +177,12 @@
 					: 'opacity-0'}"
 		>
 			<h2 class="text-2xl font-bold tracking-tight sm:text-3xl">
-				Odborný obsah pod vedením specialistů Nemocnice Beroun
+				Odborný obsah pod vedením specialistů Rehabilitační Nemocnice Beroun
 			</h2>
 			<p class="text-muted-foreground">
-				Přednášky připravují a vedou lékaři a odborníci přímo z Nemocnice Beroun. Obsah je určený
-				pro zdravotnický personál, který si chce doplnit a prohloubit odborné znalosti přímo z
-				praxe.
+				Přednášky připravují a vedou lékaři a odborníci přímo z Rehabilitační Nemocnice Beroun.
+				Obsah je určený pro zdravotnický personál, který si chce doplnit a prohloubit odborné
+				znalosti přímo z praxe.
 			</p>
 			<p class="text-muted-foreground">
 				Součástí programu jsou i diskusní panely s vedoucími lékaři a zástupci nemocnic, kde se

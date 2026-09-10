@@ -6,8 +6,17 @@
 	<div
 		class="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-8 sm:flex-row sm:items-center sm:justify-between"
 	>
-		<div>
-			<p class="font-semibold">Nemocnice Beroun</p>
+		<div class="flex flex-col gap-2">
+			<picture>
+				<source srcset="/logo-rnb-full-white.svg" media="(prefers-color-scheme: dark)" />
+				<img
+					src="/logo-rnb-full.svg"
+					alt="Rehabilitační Nemocnice Beroun"
+					class="h-8 w-auto"
+					width="689"
+					height="132"
+				/>
+			</picture>
 			<p class="text-sm text-muted-foreground">
 				Platforma pro zabezpečené online odborné konference.
 			</p>
