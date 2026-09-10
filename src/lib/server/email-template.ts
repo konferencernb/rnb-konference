@@ -8,11 +8,13 @@ import { env } from '$env/dynamic/private';
 
 // Absolute URL — email clients can't resolve a relative path or a bundled
 // asset, so the logo is served straight from the running site (same base
-// as the CTA links). Falls back to a plain-text "N" tile if ORIGIN isn't
-// set (e.g. a misconfigured environment).
-const LOGO_URL = env.ORIGIN ? `${env.ORIGIN}/nember.png` : '';
+// as the CTA links). SVG doesn't render in most email clients, hence the
+// PNG. Falls back to a plain-text wordmark if ORIGIN isn't set (e.g. a
+// misconfigured environment).
+const LOGO_URL = env.ORIGIN ? `${env.ORIGIN}/logo-rnb.png` : '';
 
-const BRAND_BLUE = '#2952e3';
+// #005795 — Rehabilitační Nemocnice Beroun brand blue (per brand manual).
+const BRAND_BLUE = '#005795';
 const INK = '#101b3d';
 const MUTED = '#5b6472';
 const BORDER = '#e3e6ee';
@@ -89,19 +91,11 @@ export function renderEmailLayout(options: {
 	<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; margin: 0 auto;">
 		<tr>
 			<td style="padding: 32px 32px 20px;">
-				<table role="presentation" cellpadding="0" cellspacing="0" border="0">
-					<tr>
-						${
-							LOGO_URL
-								? `<td style="width: 36px;"><img src="${LOGO_URL}" width="36" height="36" alt="Rehabilitační Nemocnice Beroun" style="display: block; width: 36px; height: 36px; border-radius: 8px;"></td>`
-								: `<td style="width: 36px; height: 36px; background-color: ${BRAND_BLUE}; border-radius: 8px; text-align: center; vertical-align: middle; font-family: Arial, Helvetica, sans-serif; font-size: 16px; font-weight: bold; color: #ffffff;">N</td>`
-						}
-						<td style="padding-left: 12px; font-family: Arial, Helvetica, sans-serif;">
-							<div style="font-size: 15px; font-weight: bold; color: ${INK}; line-height: 1.2;">Rehabilitační Nemocnice Beroun</div>
-							<div style="font-size: 11px; letter-spacing: 0.06em; color: ${MUTED}; text-transform: uppercase;">Online konference</div>
-						</td>
-					</tr>
-				</table>
+				${
+					LOGO_URL
+						? `<img src="${LOGO_URL}" width="180" alt="Rehabilitační Nemocnice Beroun" style="display: block; width: 180px; height: auto;">`
+						: `<div style="font-family: Arial, Helvetica, sans-serif; font-size: 15px; font-weight: bold; color: ${BRAND_BLUE};">Rehabilitační Nemocnice Beroun</div>`
+				}
 			</td>
 		</tr>
 		<tr>

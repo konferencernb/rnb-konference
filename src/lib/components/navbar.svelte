@@ -41,16 +41,17 @@
 
 <header class="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
 	<div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
-		<a href={resolve('/')} class="flex items-center gap-3">
-			<img
-				src="/nember.png"
-				alt="Rehabilitační nemocnice Beroun"
-				class="size-9 rounded-lg object-contain"
-			/>
-			<span class="flex flex-col leading-tight">
-				<span class="font-semibold">Rehabilitační Nemocnice Beroun</span>
-				<span class="text-xs tracking-wide text-muted-foreground uppercase">Online konference</span>
-			</span>
+		<a href={resolve('/')} class="flex items-center">
+			<picture>
+				<source srcset="/logo-rnb-white.svg" media="(prefers-color-scheme: dark)" />
+				<img
+					src="/logo-rnb.svg"
+					alt="Rehabilitační Nemocnice Beroun"
+					class="h-9 w-auto"
+					width="342"
+					height="132"
+				/>
+			</picture>
 		</a>
 		<div class="hidden items-center gap-4 md:flex">
 			<nav class="flex items-center gap-1">
@@ -104,18 +105,17 @@
 			</SheetTrigger>
 			<SheetContent class="flex flex-col gap-0 px-0">
 				<SheetHeader class="border-b px-6 pb-4">
-					<SheetTitle class="flex items-center gap-3 text-left">
-						<img
-							src="/nember.png"
-							alt="Rehabilitační nemocnice Beroun"
-							class="size-9 rounded-lg object-contain"
-						/>
-						<span class="flex flex-col leading-tight font-normal">
-							<span class="font-semibold">Rehabilitační Nemocnice Beroun</span>
-							<span class="text-xs tracking-wide text-muted-foreground uppercase">
-								Online konference
-							</span>
-						</span>
+					<SheetTitle class="text-left">
+						<picture>
+							<source srcset="/logo-rnb-white.svg" media="(prefers-color-scheme: dark)" />
+							<img
+								src="/logo-rnb.svg"
+								alt="Rehabilitační Nemocnice Beroun"
+								class="h-9 w-auto"
+								width="342"
+								height="132"
+							/>
+						</picture>
 					</SheetTitle>
 					<SheetDescription class="sr-only">Navigační menu</SheetDescription>
 				</SheetHeader>
