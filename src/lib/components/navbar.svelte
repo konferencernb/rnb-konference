@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import Activity from '@lucide/svelte/icons/activity';
 	import LogOut from '@lucide/svelte/icons/log-out';
 	import Menu from '@lucide/svelte/icons/menu';
 	import UserRound from '@lucide/svelte/icons/user-round';
@@ -43,11 +42,11 @@
 <header class="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
 	<div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
 		<a href={resolve('/')} class="flex items-center gap-3">
-			<span
-				class="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground"
-			>
-				<Activity class="size-5" />
-			</span>
+			<img
+				src="/nember.png"
+				alt="Rehabilitační nemocnice Beroun"
+				class="size-9 rounded-lg object-contain"
+			/>
 			<span class="flex flex-col leading-tight">
 				<span class="font-semibold">Nemocnice Beroun</span>
 				<span class="text-xs tracking-wide text-muted-foreground uppercase">Online konference</span>
@@ -106,11 +105,11 @@
 			<SheetContent class="flex flex-col gap-0 px-0">
 				<SheetHeader class="border-b px-6 pb-4">
 					<SheetTitle class="flex items-center gap-3 text-left">
-						<span
-							class="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground"
-						>
-							<Activity class="size-5" />
-						</span>
+						<img
+							src="/nember.png"
+							alt="Rehabilitační nemocnice Beroun"
+							class="size-9 rounded-lg object-contain"
+						/>
 						<span class="flex flex-col leading-tight font-normal">
 							<span class="font-semibold">Nemocnice Beroun</span>
 							<span class="text-xs tracking-wide text-muted-foreground uppercase">

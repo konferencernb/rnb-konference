@@ -7,7 +7,6 @@
 	import ArrowRight from '@lucide/svelte/icons/arrow-right';
 	import ConferenceCard from '$lib/components/conference-card.svelte';
 	import FeatureCard from '$lib/components/feature-card.svelte';
-	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { shouldPlayIntroAnimation } from '$lib/intro-animation';
 	import type { PageData } from './$types';
@@ -50,14 +49,6 @@
 		class="mx-auto grid max-w-6xl gap-10 px-6 pt-20 pb-10 sm:pb-20 lg:grid-cols-[1fr_1.3fr] lg:items-center"
 	>
 		<div class="flex flex-col gap-6 text-hero-foreground">
-			<Badge
-				variant="outline"
-				class="w-fit border-hero-foreground/30 tracking-wide text-hero-foreground/90 uppercase {playIntro
-					? 'animate-in duration-700 fade-in slide-in-from-top-4'
-					: ''}"
-			>
-				Vzdělávací platforma
-			</Badge>
 			<h1
 				class="text-4xl font-bold tracking-tight text-balance sm:text-5xl {playIntro
 					? 'animate-in delay-100 duration-700 fade-in slide-in-from-top-4'
@@ -77,7 +68,7 @@
 				<Button
 					href={resolve('/konference')}
 					size="lg"
-					class="w-fit bg-background font-bold text-primary transition-colors duration-500 hover:bg-primary hover:text-primary-foreground"
+					class="w-fit bg-hero-foreground font-bold text-hero-cta-foreground transition-colors duration-500 hover:bg-hero-to hover:text-hero-foreground"
 				>
 					<Lock data-icon="inline-start" strokeWidth={3.5} />
 					Zobrazit konference
@@ -103,6 +94,7 @@
 </section>
 
 <section class="mx-auto max-w-6xl px-6 pt-10 pb-16 sm:py-16">
+	<h2 class="mb-6 text-4xl font-bold tracking-tight">Co u nás získáte?</h2>
 	<div class="grid grid-cols-3 gap-4 sm:hidden">
 		<div class="flex flex-col items-center gap-2 text-center">
 			<div
@@ -202,35 +194,37 @@
 </section>
 
 {#if data.conferences.length > 0}
-	<section use:revealOnScroll={(v) => (recentVisible = v)} class="mx-auto max-w-6xl px-6 pb-20">
-		<div
-			class="mb-6 flex flex-wrap items-end justify-between gap-4 {!playIntro
-				? ''
-				: recentVisible
-					? 'animate-in duration-700 fade-in slide-in-from-top-4'
-					: 'opacity-0'}"
-		>
-			<div>
-				<h2 class="text-2xl font-bold">Poslední konference</h2>
-			</div>
-			<Button href={resolve('/konference')} variant="link" class="gap-1 px-0">
-				Všechny konference
-				<ArrowRight data-icon="inline-end" />
-			</Button>
-		</div>
-		<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-			{#each data.conferences as conference, i (conference.id)}
-				<div
-					class="h-full {!playIntro
-						? ''
-						: recentVisible
-							? 'animate-in duration-700 fill-mode-both fade-in slide-in-from-top-4'
-							: 'opacity-0'}"
-					style:animation-delay={playIntro && recentVisible ? `${150 + i * 80}ms` : undefined}
-				>
-					<ConferenceCard {conference} />
+	<section use:revealOnScroll={(v) => (recentVisible = v)} class="bg-section-tint">
+		<div class="mx-auto max-w-6xl px-6 py-20">
+			<div
+				class="mb-6 flex flex-wrap items-end justify-between gap-4 {!playIntro
+					? ''
+					: recentVisible
+						? 'animate-in duration-700 fade-in slide-in-from-top-4'
+						: 'opacity-0'}"
+			>
+				<div>
+					<h2 class="text-4xl font-bold tracking-tight">Poslední konference</h2>
 				</div>
-			{/each}
+				<Button href={resolve('/konference')} variant="link" class="gap-1 px-0">
+					Všechny konference
+					<ArrowRight data-icon="inline-end" />
+				</Button>
+			</div>
+			<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+				{#each data.conferences as conference, i (conference.id)}
+					<div
+						class="h-full {!playIntro
+							? ''
+							: recentVisible
+								? 'animate-in duration-700 fill-mode-both fade-in slide-in-from-top-4'
+								: 'opacity-0'}"
+						style:animation-delay={playIntro && recentVisible ? `${150 + i * 80}ms` : undefined}
+					>
+						<ConferenceCard {conference} />
+					</div>
+				{/each}
+			</div>
 		</div>
 	</section>
 {/if}

@@ -60,8 +60,15 @@
 	--hero-via: oklch(0.4 0.16 264);
 	--hero-to: oklch(0.546 0.245 262.881);
 	--hero-foreground: oklch(0.985 0 0);
+	/* Text color for the hero's white CTA pill — stays near-black in both
+	light and dark mode (identical value below), same reasoning as
+	--hero-foreground: the hero's own gradient never changes with the site
+	theme, so nothing sitting on it should either. */
+	--hero-cta-foreground: oklch(0.145 0 0);
 	--accent-soft: oklch(0.96 0.02 230);
 	--accent-soft-2: oklch(0.88 0.06 250);
+	/* #ECF5FE — light-blue section tint (e.g. behind "Poslední konference"). */
+	--section-tint: oklch(0.966 0.0154 248);
 	--highlight: oklch(0.9 0.16 95);
 	--online: oklch(0.6 0.17 145);
 	--pending: oklch(0.75 0.18 60);
@@ -104,8 +111,10 @@
 		--hero-via: oklch(0.26 0.11 264);
 		--hero-to: oklch(0.42 0.2 262.881);
 		--hero-foreground: oklch(0.985 0 0);
+		--hero-cta-foreground: oklch(0.145 0 0);
 		--accent-soft: oklch(0.269 0 0);
 		--accent-soft-2: oklch(0.32 0.05 250);
+		--section-tint: oklch(0.269 0 0);
 		--highlight: oklch(0.4 0.1 95);
 		--online: oklch(0.7 0.19 145);
 		--pending: oklch(0.75 0.16 60);
@@ -120,6 +129,8 @@
 	--color-hero-via: var(--hero-via);
 	--color-hero-to: var(--hero-to);
 	--color-hero-foreground: var(--hero-foreground);
+	--color-hero-cta-foreground: var(--hero-cta-foreground);
+	--color-section-tint: var(--section-tint);
 	--color-accent-soft: var(--accent-soft);
 	--color-accent-soft-2: var(--accent-soft-2);
 	--color-highlight: var(--highlight);

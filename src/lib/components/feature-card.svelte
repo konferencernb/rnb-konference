@@ -17,9 +17,7 @@
 			>
 				<Icon class="size-5" />
 			</div>
-			<!-- h2, not h3: this card is the first heading after the homepage's
-			hero h1, with no section heading of its own in between. -->
-			<h2 class="font-semibold tracking-tight">{title}</h2>
+			<h3 class="font-semibold tracking-tight">{title}</h3>
 		</div>
 		<p class="text-sm text-muted-foreground">{description}</p>
 	</CardContent>

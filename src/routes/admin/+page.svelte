@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import ShieldCheck from '@lucide/svelte/icons/shield-check';
 	import { authClient } from '$lib/auth-client';
 	import { Button } from '$lib/components/ui/button';
@@ -68,6 +69,13 @@
 					{submitting ? 'Přihlašování…' : 'Přihlásit se'}
 				</Button>
 			</form>
+			<a
+				href={resolve('/')}
+				class="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground hover:underline"
+			>
+				<ArrowLeft class="size-4" />
+				Zpět na web
+			</a>
 		</CardContent>
 	</Card>
 </div>
