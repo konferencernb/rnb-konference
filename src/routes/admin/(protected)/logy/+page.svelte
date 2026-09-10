@@ -73,7 +73,7 @@
 				<TableBody>
 					{#each entries as entry (entry.id)}
 						<TableRow>
-							<TableCell class="whitespace-nowrap">
+							<TableCell class="max-w-28">
 								{formatPragueDateTime(entry.createdAt)}
 							</TableCell>
 							<TableCell>{entry.conferenceTitle}</TableCell>

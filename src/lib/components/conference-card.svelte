@@ -75,7 +75,9 @@
 </script>
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -- editHref is already resolve()d by the caller -->
-<div class="relative block h-full rounded-xl transition-shadow hover:shadow-md">
+<div
+	class="relative block h-full rounded-xl transition duration-300 ease-out hover:-translate-y-1 hover:shadow-md"
+>
 	{#if !restoreAction}
 		<a
 			href={editHref ?? resolve('/(public)/konference/[id]', { id: conference.id })}
