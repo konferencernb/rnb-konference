@@ -4,6 +4,14 @@
 // Outlook desktop (renders HTML via Word, not a browser engine), Gmail,
 // and Apple Mail, rather than degrading gracefully in some of them.
 
+import { env } from '$env/dynamic/private';
+
+// Absolute URL — email clients can't resolve a relative path or a bundled
+// asset, so the logo is served straight from the running site (same base
+// as the CTA links). Falls back to a plain-text "N" tile if ORIGIN isn't
+// set (e.g. a misconfigured environment).
+const LOGO_URL = env.ORIGIN ? `${env.ORIGIN}/nember.png` : '';
+
 const BRAND_BLUE = '#2952e3';
 const INK = '#101b3d';
 const MUTED = '#5b6472';
@@ -83,7 +91,11 @@ export function renderEmailLayout(options: {
 			<td style="padding: 32px 32px 20px;">
 				<table role="presentation" cellpadding="0" cellspacing="0" border="0">
 					<tr>
-						<td style="width: 36px; height: 36px; background-color: ${BRAND_BLUE}; border-radius: 8px; text-align: center; vertical-align: middle; font-family: Arial, Helvetica, sans-serif; font-size: 16px; font-weight: bold; color: #ffffff;">N</td>
+						${
+							LOGO_URL
+								? `<td style="width: 36px;"><img src="${LOGO_URL}" width="36" height="36" alt="Nemocnice Beroun" style="display: block; width: 36px; height: 36px; border-radius: 8px;"></td>`
+								: `<td style="width: 36px; height: 36px; background-color: ${BRAND_BLUE}; border-radius: 8px; text-align: center; vertical-align: middle; font-family: Arial, Helvetica, sans-serif; font-size: 16px; font-weight: bold; color: #ffffff;">N</td>`
+						}
 						<td style="padding-left: 12px; font-family: Arial, Helvetica, sans-serif;">
 							<div style="font-size: 15px; font-weight: bold; color: ${INK}; line-height: 1.2;">Nemocnice Beroun</div>
 							<div style="font-size: 11px; letter-spacing: 0.06em; color: ${MUTED}; text-transform: uppercase;">Online konference</div>
