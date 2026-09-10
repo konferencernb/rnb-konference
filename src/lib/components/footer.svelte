@@ -22,10 +22,16 @@
 			</p>
 		</div>
 		<nav class="flex items-center gap-6 text-sm">
-			<a href={resolve('/konference')} class="text-muted-foreground hover:text-foreground">
+			<a
+				href={resolve('/konference')}
+				class="text-muted-foreground hover:text-foreground focus-visible:text-foreground"
+			>
 				Archiv konferencí
 			</a>
-			<a href={resolve('/admin')} class="text-muted-foreground hover:text-foreground">
+			<a
+				href={resolve('/admin')}
+				class="text-muted-foreground hover:text-foreground focus-visible:text-foreground"
+			>
 				Administrace
 			</a>
 		</nav>

@@ -41,12 +41,22 @@
 	let recentVisible = $state(false);
 </script>
 
-<section
-	class="relative overflow-hidden"
-	style="background-image: radial-gradient(ellipse 75% 100% at 75% 45%, var(--hero-to) 0%, var(--hero-via) 50%, var(--hero-from) 100%);"
->
+<section class="relative isolate overflow-hidden">
+	<img
+		src="/images/prednaska.png"
+		alt=""
+		aria-hidden="true"
+		class="absolute inset-0 -z-20 size-full object-cover object-center"
+	/>
+	<!-- Blue brand wash over the photo — heavy on the left where the copy
+	sits so the white text stays readable, lighter on the right so the sál
+	still reads through. -->
 	<div
-		class="mx-auto grid max-w-6xl gap-10 px-6 pt-20 pb-10 sm:pb-20 lg:grid-cols-[1fr_1.3fr] lg:items-center"
+		class="absolute inset-0 -z-10 bg-linear-to-r from-hero-from/95 from-30% via-hero-via/80 to-hero-to/55"
+		aria-hidden="true"
+	></div>
+	<div
+		class="mx-auto grid max-w-6xl gap-10 px-6 pt-24 pb-16 sm:pt-28 sm:pb-28 lg:grid-cols-[1fr_1.3fr] lg:items-center"
 	>
 		<div class="flex flex-col gap-6 text-hero-foreground">
 			<h1
@@ -68,7 +78,7 @@
 				<Button
 					href={resolve('/konference')}
 					size="lg"
-					class="w-fit bg-hero-foreground font-bold text-hero-cta-foreground transition-colors duration-500 hover:bg-hero-to hover:text-hero-foreground"
+					class="w-fit bg-hero-foreground font-bold text-hero-cta-foreground transition-colors duration-500 hover:bg-hero-to hover:text-hero-foreground focus-visible:bg-hero-to focus-visible:text-hero-foreground"
 				>
 					<Lock data-icon="inline-start" strokeWidth={3.5} />
 					Zobrazit konference
@@ -98,7 +108,7 @@
 	<div class="grid grid-cols-3 gap-4 sm:hidden">
 		<div class="flex flex-col items-center gap-2 text-center">
 			<div
-				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-primary to-primary/70 text-primary-foreground"
+				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"
 			>
 				<ShieldCheck class="size-5" />
 			</div>
@@ -106,7 +116,7 @@
 		</div>
 		<div class="flex flex-col items-center gap-2 text-center">
 			<div
-				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-primary to-primary/70 text-primary-foreground"
+				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"
 			>
 				<MonitorPlay class="size-5" />
 			</div>
@@ -114,7 +124,7 @@
 		</div>
 		<div class="flex flex-col items-center gap-2 text-center">
 			<div
-				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-primary to-primary/70 text-primary-foreground"
+				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"
 			>
 				<Archive class="size-5" />
 			</div>

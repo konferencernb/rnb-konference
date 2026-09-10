@@ -50,7 +50,13 @@
 	let volume = $state(50);
 	let currentTime = $state(0);
 	let duration = $state(0);
-	let isFullscreen = $state(false);
+	// Native element fullscreen only works on desktop and Android Chrome. On
+	// iOS Safari `Element.requestFullscreen` doesn't exist for anything but a
+	// real <video>, so there we fall back to a fixed, viewport-filling
+	// overlay ("pseudo fullscreen").
+	let nativeFullscreen = $state(false);
+	let pseudoFullscreen = $state(false);
+	const isFullscreen = $derived(nativeFullscreen || pseudoFullscreen);
 	let showControls = $state(true);
 	let hideTimer: ReturnType<typeof setTimeout> | undefined;
 	// Set either up front (an unparseable URL never reaches YT.Player at all)
@@ -190,10 +196,33 @@
 
 	$effect(() => {
 		function onFullscreenChange() {
-			isFullscreen = document.fullscreenElement === wrapper;
+			nativeFullscreen =
+				document.fullscreenElement === wrapper ||
+				(document as unknown as { webkitFullscreenElement?: Element }).webkitFullscreenElement ===
+					wrapper;
 		}
 		document.addEventListener('fullscreenchange', onFullscreenChange);
-		return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+		document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+		return () => {
+			document.removeEventListener('fullscreenchange', onFullscreenChange);
+			document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+		};
+	});
+
+	// Esc leaves the pseudo-fullscreen overlay (native fullscreen handles its
+	// own Esc). Also lock body scroll while the overlay is up.
+	$effect(() => {
+		if (!pseudoFullscreen) return;
+		function onKey(event: KeyboardEvent) {
+			if (event.key === 'Escape') pseudoFullscreen = false;
+		}
+		document.addEventListener('keydown', onKey);
+		const prevOverflow = document.body.style.overflow;
+		document.body.style.overflow = 'hidden';
+		return () => {
+			document.removeEventListener('keydown', onKey);
+			document.body.style.overflow = prevOverflow;
+		};
 	});
 
 	function togglePlay() {
@@ -244,20 +273,47 @@
 
 	async function toggleFullscreen() {
 		if (!wrapper) return;
-		if (document.fullscreenElement === wrapper) {
-			await document.exitFullscreen();
-		} else {
-			await wrapper.requestFullscreen();
+
+		const doc = document as unknown as {
+			webkitFullscreenElement?: Element;
+			webkitExitFullscreen?: () => Promise<void> | void;
+		};
+		const el = wrapper as unknown as {
+			webkitRequestFullscreen?: () => Promise<void> | void;
+		};
+
+		if (nativeFullscreen) {
+			await (document.exitFullscreen?.() ?? doc.webkitExitFullscreen?.());
+			return;
 		}
+		if (pseudoFullscreen) {
+			pseudoFullscreen = false;
+			return;
+		}
+
+		const request =
+			wrapper.requestFullscreen?.bind(wrapper) ?? el.webkitRequestFullscreen?.bind(el);
+		if (request) {
+			try {
+				await request();
+				return;
+			} catch {
+				// Fall through to the overlay fallback (e.g. iOS rejects it).
+			}
+		}
+		pseudoFullscreen = true;
 	}
 </script>
 
 <div
 	bind:this={wrapper}
-	class="relative aspect-video w-full overflow-hidden rounded-lg bg-black select-none"
+	class="overflow-hidden bg-black select-none {pseudoFullscreen
+		? 'fixed inset-0 z-50'
+		: 'relative aspect-video w-full rounded-lg'}"
 	role="group"
 	aria-label={title}
 	onpointermove={revealControls}
+	onpointerdown={revealControls}
 	onpointerleave={onPointerLeave}
 >
 	<!-- The transform lives on this wrapper, never on `target` directly —
@@ -314,11 +370,11 @@
 					aria-label="Průběh přehrávání"
 				/>
 			{/if}
-			<div class="flex items-center gap-3 text-white">
+			<div class="flex items-center gap-2 text-white">
 				<button
 					type="button"
 					onclick={togglePlay}
-					class="cursor-pointer"
+					class="flex cursor-pointer items-center justify-center p-1.5"
 					aria-label={playing ? 'Pauza' : 'Přehrát'}
 				>
 					{#if playing}
@@ -330,7 +386,7 @@
 				<button
 					type="button"
 					onclick={toggleMute}
-					class="cursor-pointer"
+					class="flex cursor-pointer items-center justify-center p-1.5"
 					aria-label={muted ? 'Zapnout zvuk' : 'Ztlumit'}
 				>
 					{#if muted || volume === 0}
@@ -357,7 +413,7 @@
 				<button
 					type="button"
 					onclick={toggleFullscreen}
-					class="ml-auto cursor-pointer"
+					class="ml-auto flex cursor-pointer items-center justify-center p-1.5"
 					aria-label={isFullscreen ? 'Ukončit celou obrazovku' : 'Celá obrazovka'}
 				>
 					{#if isFullscreen}
