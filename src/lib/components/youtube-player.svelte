@@ -41,6 +41,37 @@
 	let target = $state<HTMLDivElement>();
 	let player: YT.Player | undefined;
 
+	// YouTube decides how aggressively to brand the player based partly on
+	// its own *native* render size — confirmed live: a player rendered small
+	// (mobile width) shows much more branding than the same crop that fully
+	// hid it at a larger size, even at a heavier crop. So the iframe is
+	// always instantiated at this fixed, "desktop-class" size regardless of
+	// how big it's actually displayed, and `baseScale` below shrinks the
+	// whole thing back down to fit — the crop below then only has to clean
+	// up the same modest amount of branding every time, mobile included.
+	const NATIVE_WIDTH = 1280;
+	const NATIVE_HEIGHT = 720;
+	let baseScale = $state(1);
+
+	$effect(() => {
+		if (!wrapper) return;
+		const el = wrapper;
+
+		function measure() {
+			// min(), not just width — the wrapper is exactly 16:9 normally
+			// (aspect-video, so width alone would do), but the pseudo-fullscreen
+			// overlay fills the actual screen, whatever shape that is, and
+			// this keeps the video centered and fully contained either way
+			// instead of overflowing a portrait screen's height.
+			baseScale = Math.min(el.clientWidth / NATIVE_WIDTH, el.clientHeight / NATIVE_HEIGHT);
+		}
+
+		measure();
+		const observer = new ResizeObserver(measure);
+		observer.observe(el);
+		return () => observer.disconnect();
+	});
+
 	let playing = $state(false);
 	// Once true, stays true — lets the pause overlay tell "never started yet"
 	// (nothing to show, keep it solid black) apart from "paused mid-video"
@@ -140,6 +171,9 @@
 			if (cancelled || !target) return;
 
 			const instance = new YT.Player(target, {
+				// Native size on purpose — see the comment by NATIVE_WIDTH above.
+				width: NATIVE_WIDTH,
+				height: NATIVE_HEIGHT,
 				videoId: getYoutubeVideoId(videoUrl),
 				playerVars: {
 					autoplay: 1,
@@ -147,7 +181,9 @@
 					controls: 0,
 					disablekb: 1,
 					fs: 0,
-					modestbranding: 1,
+					// modestbranding was retired by YouTube in Aug 2023 and no
+					// longer does anything — left out rather than kept as a
+					// no-op that implies this is still handled.
 					rel: 0,
 					iv_load_policy: 3
 				},
@@ -316,16 +352,24 @@
 	onpointerdown={revealControls}
 	onpointerleave={onPointerLeave}
 >
-	<!-- The transform lives on this wrapper, never on `target` directly —
-	YT.Player replaces `target`'s actual DOM node with its own <iframe> at
-	init, so a reactive style bound to `target` itself keeps updating an
-	invisible, detached element after that swap and the zoom would visibly
-	get stuck. This div is never touched by YT.Player, so it stays reactive. -->
+	<!-- Base scale: renders the iframe at a fixed "desktop-class" native size
+	(see NATIVE_WIDTH above) and shrinks the whole thing down to fit however
+	big the player is actually displayed — recalculated on resize. -->
 	<div
-		class="pointer-events-none h-full w-full transition-transform duration-700 ease-out"
-		style="transform: scale({zoomed ? 1.25 : 1});"
+		class="pointer-events-none absolute top-1/2 left-1/2"
+		style="width: {NATIVE_WIDTH}px; height: {NATIVE_HEIGHT}px; transform-origin: center center; transform: translate(-50%, -50%) scale({baseScale});"
 	>
-		<div bind:this={target} class="h-full w-full"></div>
+		<!-- The crop lives on this wrapper, never on `target` directly —
+		YT.Player replaces `target`'s actual DOM node with its own <iframe> at
+		init, so a reactive style bound to `target` itself keeps updating an
+		invisible, detached element after that swap and the zoom would visibly
+		get stuck. This div is never touched by YT.Player, so it stays reactive. -->
+		<div
+			class="h-full w-full transition-transform duration-700 ease-out"
+			style="transform: scale({zoomed ? 1.3 : 1});"
+		>
+			<div bind:this={target} class="h-full w-full"></div>
+		</div>
 	</div>
 
 	{#if playbackError}
