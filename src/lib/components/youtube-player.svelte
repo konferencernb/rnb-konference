@@ -41,43 +41,12 @@
 	let target = $state<HTMLDivElement>();
 	let player: YT.Player | undefined;
 
-	// YouTube decides how aggressively to brand the player based partly on
-	// its own *native* render size — confirmed live: a player rendered small
-	// (mobile width) shows much more branding than the same crop that fully
-	// hid it at a larger size, even at a heavier crop. So the iframe is
-	// always instantiated at this fixed, "desktop-class" size regardless of
-	// how big it's actually displayed, and `baseScale` below shrinks the
-	// whole thing back down to fit — the crop below then only has to clean
-	// up the same modest amount of branding every time, mobile included.
-	const NATIVE_WIDTH = 1280;
-	const NATIVE_HEIGHT = 720;
-	let baseScale = $state(1);
-
-	$effect(() => {
-		if (!wrapper) return;
-		const el = wrapper;
-
-		function measure() {
-			// min(), not just width — the wrapper is exactly 16:9 normally
-			// (aspect-video, so width alone would do), but the pseudo-fullscreen
-			// overlay fills the actual screen, whatever shape that is, and
-			// this keeps the video centered and fully contained either way
-			// instead of overflowing a portrait screen's height.
-			baseScale = Math.min(el.clientWidth / NATIVE_WIDTH, el.clientHeight / NATIVE_HEIGHT);
-		}
-
-		measure();
-		const observer = new ResizeObserver(measure);
-		observer.observe(el);
-		return () => observer.disconnect();
-	});
-
 	let playing = $state(false);
 	// Once true, stays true — lets the pause overlay tell "never started yet"
 	// (nothing to show, keep it solid black) apart from "paused mid-video"
 	// (the last real frame is sitting right there, no reason to hide it).
 	let hasStarted = $state(false);
-	let muted = $state(true);
+	let muted = $state(false);
 	let volume = $state(50);
 	let currentTime = $state(0);
 	let duration = $state(0);
@@ -126,37 +95,6 @@
 	// or from the player's own onError — without this the black box just sits
 	// there doing nothing when clicked, with no indication anything's wrong.
 	let playbackError = $state(!getYoutubeVideoId(videoUrl));
-	// YouTube briefly shows its own title/channel card and a "more videos" +
-	// logo corner overlay for the first few seconds whenever playback starts
-	// (autoplay or a real click, confirmed either way) — it's part of the
-	// iframe's own rendered content, not something a playerVars option can
-	// turn off, and it never recurs once past this window (not on hover, not
-	// on pause/resume in testing). Rather than covering the player (visible
-	// delay before anything shows) or permanently cropping it (loses part of
-	// the picture forever), the video plays immediately zoomed in just
-	// enough to push those elements outside the visible frame, then eases
-	// back out to the real framing once the window has passed — starts
-	// `true` so a video that autoplays immediately is already zoomed in
-	// before the first frame ever paints.
-	let starting = $state(true);
-	let startingTimer: ReturnType<typeof setTimeout> | undefined;
-
-	// Also zoom whenever the controls are showing — on hover (via
-	// `showControls`, which goes true on pointer move and back to false once
-	// the idle timer hides the bar again, or the moment the pointer actually
-	// leaves the player — see onPointerLeave) and while paused (the same
-	// state is forced true there too). That way the zoom isn't a thing that
-	// only ever happens once, right at launch, which would make it stand out
-	// as exactly what it is.
-	const zoomed = $derived(starting || showControls);
-
-	function armStartingCover() {
-		starting = true;
-		if (startingTimer) clearTimeout(startingTimer);
-		startingTimer = setTimeout(() => {
-			starting = false;
-		}, 4500);
-	}
 
 	function scheduleHide() {
 		if (hideTimer) clearTimeout(hideTimer);
@@ -207,27 +145,28 @@
 			if (cancelled || !target) return;
 
 			const instance = new YT.Player(target, {
-				// Native size on purpose — see the comment by NATIVE_WIDTH above.
-				width: NATIVE_WIDTH,
-				height: NATIVE_HEIGHT,
+				width: '100%',
+				height: '100%',
 				videoId: getYoutubeVideoId(videoUrl),
 				playerVars: {
 					autoplay: 1,
+					// Muted so autoplay is reliably allowed (browsers universally
+					// permit muted autoplay, not unmuted) — unmuted to half volume
+					// immediately below in onReady instead of staying silent.
 					mute: 1,
 					controls: 0,
 					disablekb: 1,
 					fs: 0,
-					// modestbranding was retired by YouTube in Aug 2023 and no
-					// longer does anything — left out rather than kept as a
-					// no-op that implies this is still handled.
 					rel: 0,
 					iv_load_policy: 3
 				},
 				events: {
 					onReady: (event: YT.PlayerEvent) => {
 						duration = event.target.getDuration();
-						volume = event.target.getVolume();
-						muted = event.target.isMuted();
+						event.target.setVolume(50);
+						event.target.unMute();
+						volume = 50;
+						muted = false;
 						pollHandle = setInterval(() => {
 							currentTime = instance.getCurrentTime();
 							duration = instance.getDuration();
@@ -235,14 +174,8 @@
 					},
 					onStateChange: (event: YT.OnStateChangeEvent) => {
 						const nowPlaying = event.data === YT.PlayerState.PLAYING;
-						// Only the very first time playback actually starts — a live
-						// stream re-enters PLAYING after every brief buffering blip,
-						// and re-arming the timer on each of those meant it kept
-						// getting pushed back and never actually fired. Re-arming on
-						// a real user-initiated resume is togglePlay()'s job instead.
 						if (nowPlaying && !hasStarted) {
 							hasStarted = true;
-							armStartingCover();
 						}
 						playing = nowPlaying;
 					},
@@ -260,7 +193,6 @@
 		return () => {
 			cancelled = true;
 			if (pollHandle) clearInterval(pollHandle);
-			if (startingTimer) clearTimeout(startingTimer);
 			player?.destroy();
 			player = undefined;
 		};
@@ -302,10 +234,6 @@
 		if (playing) {
 			player.pauseVideo();
 		} else {
-			// A real resume (as opposed to the initial autoplay) also gets the
-			// branding-hiding zoom again — confirmed separately that YouTube
-			// re-shows its title/logo overlay after a manual pause too.
-			if (hasStarted) armStartingCover();
 			player.playVideo();
 		}
 	}
@@ -391,25 +319,7 @@
 	onpointerdown={revealControls}
 	onpointerleave={onPointerLeave}
 >
-	<!-- Base scale: renders the iframe at a fixed "desktop-class" native size
-	(see NATIVE_WIDTH above) and shrinks the whole thing down to fit however
-	big the player is actually displayed — recalculated on resize. -->
-	<div
-		class="pointer-events-none absolute top-1/2 left-1/2"
-		style="width: {NATIVE_WIDTH}px; height: {NATIVE_HEIGHT}px; transform-origin: center center; transform: translate(-50%, -50%) scale({baseScale});"
-	>
-		<!-- The crop lives on this wrapper, never on `target` directly —
-		YT.Player replaces `target`'s actual DOM node with its own <iframe> at
-		init, so a reactive style bound to `target` itself keeps updating an
-		invisible, detached element after that swap and the zoom would visibly
-		get stuck. This div is never touched by YT.Player, so it stays reactive. -->
-		<div
-			class="h-full w-full transition-transform duration-700 ease-out"
-			style="transform: scale({zoomed ? 1.3 : 1});"
-		>
-			<div bind:this={target} class="h-full w-full"></div>
-		</div>
-	</div>
+	<div bind:this={target} class="pointer-events-none absolute inset-0"></div>
 
 	{#if playbackError}
 		<div
