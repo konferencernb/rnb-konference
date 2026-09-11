@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
@@ -53,6 +54,12 @@
 					</Button>
 				</form>
 			{/if}
+			<a
+				href={resolve('/prihlaseni')}
+				class="text-center text-xs text-muted-foreground hover:text-foreground hover:underline"
+			>
+				Zpět na přihlášení
+			</a>
 		</CardContent>
 	</Card>
 </div>
