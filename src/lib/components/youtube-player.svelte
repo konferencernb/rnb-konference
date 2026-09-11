@@ -111,8 +111,8 @@
 	// The idle timer above is for "stopped moving but the pointer's still
 	// there" — leaving the player entirely is a stronger, immediate signal
 	// that the hover is over, so don't make it wait out the same 4.5s. Only
-	// while actually playing: if paused, controls (and the zoom) are meant to
-	// stay up regardless of the pointer, per the effect below.
+	// while actually playing: if paused, controls are meant to stay up
+	// regardless of the pointer, per the effect below.
 	function onPointerLeave() {
 		if (!playing || isFullscreen) return;
 		if (hideTimer) clearTimeout(hideTimer);
@@ -214,18 +214,31 @@
 	});
 
 	// Esc leaves the pseudo-fullscreen overlay (native fullscreen handles its
-	// own Esc). Also lock body scroll while the overlay is up.
+	// own Esc). Also locks body scroll while the overlay is up — plain
+	// `overflow: hidden` doesn't reliably stop scroll/rubber-banding on iOS
+	// Safari, so the body is pinned in place with `position: fixed` instead
+	// (the standard workaround there) and the scroll position restored after.
 	$effect(() => {
 		if (!pseudoFullscreen) return;
 		function onKey(event: KeyboardEvent) {
 			if (event.key === 'Escape') pseudoFullscreen = false;
 		}
 		document.addEventListener('keydown', onKey);
-		const prevOverflow = document.body.style.overflow;
-		document.body.style.overflow = 'hidden';
+
+		const scrollY = window.scrollY;
+		const prevPosition = document.body.style.position;
+		const prevTop = document.body.style.top;
+		const prevWidth = document.body.style.width;
+		document.body.style.position = 'fixed';
+		document.body.style.top = `-${scrollY}px`;
+		document.body.style.width = '100%';
+
 		return () => {
 			document.removeEventListener('keydown', onKey);
-			document.body.style.overflow = prevOverflow;
+			document.body.style.position = prevPosition;
+			document.body.style.top = prevTop;
+			document.body.style.width = prevWidth;
+			window.scrollTo(0, scrollY);
 		};
 	});
 
@@ -310,9 +323,9 @@
 	class="touch-manipulation overflow-hidden bg-black select-none {pseudoFullscreen
 		? isPortrait
 			? 'fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rotate-90'
-			: 'fixed inset-0 z-50'
+			: 'fixed inset-0 z-50 h-dvh w-dvw'
 		: 'relative aspect-video w-full rounded-lg'}"
-	style={pseudoFullscreen && isPortrait ? 'width: 100vh; height: 100vw;' : ''}
+	style={pseudoFullscreen && isPortrait ? 'width: 100dvh; height: 100dvw;' : ''}
 	role="group"
 	aria-label={title}
 	onpointermove={revealControls}
