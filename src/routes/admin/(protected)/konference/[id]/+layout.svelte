@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
-	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils.js';
 	import type { LayoutData } from './$types';
 
@@ -25,13 +23,7 @@
 </script>
 
 <div class="mx-auto max-w-6xl px-6 py-10">
-	<div class="flex items-center justify-between gap-4">
-		<h1 class="text-2xl font-bold">{data.conference.title}</h1>
-		<Button href={resolve('/admin/konference')} variant="outline">
-			<ArrowLeft data-icon="inline-start" />
-			Zpět
-		</Button>
-	</div>
+	<h1 class="text-2xl font-bold">{data.conference.title}</h1>
 
 	<div class="mt-6 flex gap-4 border-b border-border">
 		{#each tabs as tab (tab.href)}

@@ -2,12 +2,11 @@
 	import { tick } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { applyAction, enhance } from '$app/forms';
-	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import CalendarPlus from '@lucide/svelte/icons/calendar-plus';
 	import CirclePlus from '@lucide/svelte/icons/circle-plus';
 	import Clock from '@lucide/svelte/icons/clock';
+	import Pencil from '@lucide/svelte/icons/pencil';
 	import Search from '@lucide/svelte/icons/search';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { formatCustomerName } from '$lib/format-name';
@@ -26,6 +25,14 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
+	import {
+		Dialog,
+		DialogContent,
+		DialogFooter,
+		DialogHeader,
+		DialogTitle,
+		DialogTrigger
+	} from '$lib/components/ui/dialog';
 	import { Empty, EmptyDescription } from '$lib/components/ui/empty';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -40,6 +47,12 @@
 	let selectedConferenceId = $state<string | undefined>(undefined);
 	let grantFormEl = $state<HTMLFormElement>();
 	let deleteDialogOpen = $state(false);
+	let editDialogOpen = $state(false);
+	let editSubmitting = $state(false);
+	let resetSubmitting = $state(false);
+	let editFirstName = $state(data.customer.firstName ?? '');
+	let editLastName = $state(data.customer.lastName ?? '');
+	let editEmail = $state(data.customer.email);
 
 	function formatConferenceDate(startsAt: string | Date | null) {
 		return startsAt ? formatPragueDate(startsAt) : '';
@@ -73,6 +86,15 @@
 		await tick();
 		grantFormEl?.requestSubmit();
 	}
+
+	// Re-seed the fields off the current (saved) values every time the modal
+	// opens, so a cancelled edit never lingers into the next time it's opened.
+	$effect(() => {
+		if (!editDialogOpen) return;
+		editFirstName = data.customer.firstName ?? '';
+		editLastName = data.customer.lastName ?? '';
+		editEmail = data.customer.email;
+	});
 </script>
 
 <div class="mx-auto max-w-6xl px-6 py-10">
@@ -102,12 +124,13 @@
 					Registrace: {formatPragueDate(data.customer.registeredAt ?? data.customer.createdAt)}
 				</p>
 			{/if}
+		</div>
+		<div class="flex shrink-0 items-center gap-2">
 			<AlertDialog bind:open={deleteDialogOpen}>
 				<AlertDialogTrigger>
 					{#snippet child({ props })}
-						<Button {...props} variant="destructive" size="sm" class="mt-3">
-							<Trash2 data-icon="inline-start" />
-							Smazat uživatele
+						<Button {...props} variant="destructive" size="icon" aria-label="Smazat uživatele">
+							<Trash2 class="size-4" />
 						</Button>
 					{/snippet}
 				</AlertDialogTrigger>
@@ -146,11 +169,99 @@
 					</form>
 				</AlertDialogContent>
 			</AlertDialog>
+			<Dialog bind:open={editDialogOpen}>
+				<DialogTrigger>
+					{#snippet child({ props })}
+						<Button {...props} variant="outline">
+							<Pencil data-icon="inline-start" />
+							Upravit
+						</Button>
+					{/snippet}
+				</DialogTrigger>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Upravit uživatele</DialogTitle>
+					</DialogHeader>
+					<form
+						method="POST"
+						action="?/updateUser"
+						class="flex flex-col gap-4"
+						use:enhance={() => {
+							editSubmitting = true;
+							return async ({ result, update }) => {
+								editSubmitting = false;
+								if (result.type === 'success') {
+									editDialogOpen = false;
+									toast.success('Uživatel byl úspěšně uložen.');
+									await update();
+									return;
+								}
+
+								await applyAction(result);
+								if (result.type === 'error') {
+									toast.error('Něco se pokazilo. Zkuste to prosím znovu.');
+								}
+							};
+						}}
+					>
+						<div class="flex gap-3">
+							<div class="flex flex-1 flex-col gap-1.5">
+								<Label for="edit-firstName">Jméno</Label>
+								<Input id="edit-firstName" name="firstName" bind:value={editFirstName} required />
+							</div>
+							<div class="flex flex-1 flex-col gap-1.5">
+								<Label for="edit-lastName">Příjmení</Label>
+								<Input id="edit-lastName" name="lastName" bind:value={editLastName} required />
+							</div>
+						</div>
+						<div class="flex flex-col gap-1.5">
+							<Label for="edit-email">Email</Label>
+							<Input id="edit-email" name="email" type="email" bind:value={editEmail} required />
+						</div>
+						<div class="flex flex-col gap-1.5">
+							<Label for="edit-password">Heslo</Label>
+							<Input id="edit-password" type="password" placeholder="•••••" disabled />
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								class="self-start"
+								disabled={resetSubmitting}
+								onclick={async () => {
+									resetSubmitting = true;
+									// Same endpoint the public "zapomenuté heslo" page calls —
+									// no separate admin-side reset mechanism to keep in sync.
+									const response = await fetch('/api/zapomenute-heslo', {
+										method: 'POST',
+										headers: { 'Content-Type': 'application/json' },
+										body: JSON.stringify({ email: data.customer.email })
+									});
+									resetSubmitting = false;
+									if (response.ok) {
+										toast.success('Odkaz na reset hesla byl odeslán uživateli e-mailem.');
+									} else {
+										toast.error('Reset hesla se nepodařilo odeslat.');
+									}
+								}}
+							>
+								{resetSubmitting ? 'Odesílání…' : 'Reset hesla'}
+							</Button>
+						</div>
+						{#if form?.updateError}
+							<p class="text-sm text-destructive">{form.updateError}</p>
+						{/if}
+						<DialogFooter>
+							<Button type="button" variant="ghost" onclick={() => (editDialogOpen = false)}>
+								Zrušit
+							</Button>
+							<Button type="submit" disabled={editSubmitting}>
+								{editSubmitting ? 'Ukládání…' : 'Uložit'}
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
 		</div>
-		<Button href={resolve('/admin/uzivatele')} variant="outline">
-			<ArrowLeft data-icon="inline-start" />
-			Zpět
-		</Button>
 	</div>
 
 	<section class="mt-8">
