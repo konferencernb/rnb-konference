@@ -88,6 +88,38 @@
 	let nativeFullscreen = $state(false);
 	let pseudoFullscreen = $state(false);
 	const isFullscreen = $derived(nativeFullscreen || pseudoFullscreen);
+
+	// Tracks the device's actual orientation so fullscreen can fall back to
+	// visually rotating the player when a real landscape lock isn't
+	// available (see the effect below) — most notably iOS Safari, which
+	// doesn't implement the Screen Orientation API at all.
+	let isPortrait = $state(false);
+
+	$effect(() => {
+		const mq = window.matchMedia('(orientation: portrait)');
+		isPortrait = mq.matches;
+		function onChange() {
+			isPortrait = mq.matches;
+		}
+		mq.addEventListener('change', onChange);
+		return () => mq.removeEventListener('change', onChange);
+	});
+
+	// Best-effort real landscape lock while fullscreen — works on Android
+	// Chrome (only while actually in native Fullscreen), silently does
+	// nothing anywhere it isn't supported or allowed (iOS Safari, desktop).
+	// Where it fails, `isPortrait` above stays true and the template rotates
+	// the player with CSS instead — see the wrapper's class below.
+	$effect(() => {
+		if (!isFullscreen) return;
+		const orientation = (
+			screen as unknown as {
+				orientation?: { lock?: (o: string) => Promise<void>; unlock?: () => void };
+			}
+		).orientation;
+		orientation?.lock?.('landscape').catch(() => {});
+		return () => orientation?.unlock?.();
+	});
 	let showControls = $state(true);
 	let hideTimer: ReturnType<typeof setTimeout> | undefined;
 	// Set either up front (an unparseable URL never reaches YT.Player at all)
@@ -135,7 +167,7 @@
 
 	function revealControls() {
 		showControls = true;
-		if (playing) scheduleHide();
+		if (playing && !isFullscreen) scheduleHide();
 	}
 
 	// The idle timer above is for "stopped moving but the pointer's still
@@ -144,13 +176,17 @@
 	// while actually playing: if paused, controls (and the zoom) are meant to
 	// stay up regardless of the pointer, per the effect below.
 	function onPointerLeave() {
-		if (!playing) return;
+		if (!playing || isFullscreen) return;
 		if (hideTimer) clearTimeout(hideTimer);
 		showControls = false;
 	}
 
 	$effect(() => {
-		if (playing) {
+		// Controls never auto-hide in fullscreen — with no mouse to "hover"
+		// on a touchscreen, a hidden control bar has no way back except
+		// tapping blind (the same tap the center play/pause overlay already
+		// claims), which made the exit-fullscreen button feel unresponsive.
+		if (playing && !isFullscreen) {
 			scheduleHide();
 		} else {
 			showControls = true;
@@ -343,9 +379,12 @@
 
 <div
 	bind:this={wrapper}
-	class="overflow-hidden bg-black select-none {pseudoFullscreen
-		? 'fixed inset-0 z-50'
+	class="touch-manipulation overflow-hidden bg-black select-none {pseudoFullscreen
+		? isPortrait
+			? 'fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rotate-90'
+			: 'fixed inset-0 z-50'
 		: 'relative aspect-video w-full rounded-lg'}"
+	style={pseudoFullscreen && isPortrait ? 'width: 100vh; height: 100vw;' : ''}
 	role="group"
 	aria-label={title}
 	onpointermove={revealControls}
@@ -384,7 +423,7 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
-			class="absolute inset-0 flex cursor-pointer items-center justify-center {playing
+			class="absolute inset-0 flex cursor-pointer touch-manipulation items-center justify-center {playing
 				? ''
 				: hasStarted
 					? 'bg-black/40'
@@ -398,7 +437,7 @@
 		</div>
 
 		<div
-			class="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-linear-to-t from-black/80 to-transparent px-3 pt-6 pb-2 transition-opacity duration-300 {showControls
+			class="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1 bg-linear-to-t from-black/80 to-transparent px-3 pt-6 pb-2 transition-opacity duration-300 {showControls
 				? 'opacity-100'
 				: 'pointer-events-none opacity-0'}"
 		>
