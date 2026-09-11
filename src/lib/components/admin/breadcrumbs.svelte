@@ -10,23 +10,26 @@
 		BreadcrumbSeparator
 	} from '$lib/components/ui/breadcrumb';
 
-	let { items }: { items: { label: string; href?: string }[] } = $props();
+	let { items, class: className }: { items: { label: string; href?: string }[]; class?: string } =
+		$props();
 </script>
 
-<Breadcrumb>
+<Breadcrumb class="min-w-0 {className ?? ''}">
 	<BreadcrumbList class="flex-nowrap">
-		<BreadcrumbItem>
+		<BreadcrumbItem class="shrink-0">
 			<BreadcrumbLink href={resolve('/admin/dashboard')} aria-label="Dashboard">
 				<House class="size-4" />
 			</BreadcrumbLink>
 		</BreadcrumbItem>
 		{#each items as item, index (item.label)}
-			<BreadcrumbSeparator>/</BreadcrumbSeparator>
-			<BreadcrumbItem>
+			<BreadcrumbSeparator class="shrink-0">/</BreadcrumbSeparator>
+			<BreadcrumbItem class="min-w-0">
 				{#if item.href && index < items.length - 1}
-					<BreadcrumbLink href={item.href} class="max-w-48 truncate">{item.label}</BreadcrumbLink>
+					<BreadcrumbLink href={item.href} class="block max-w-32 truncate sm:max-w-48"
+						>{item.label}</BreadcrumbLink
+					>
 				{:else}
-					<BreadcrumbPage class="max-w-48 truncate">{item.label}</BreadcrumbPage>
+					<BreadcrumbPage class="block max-w-32 truncate sm:max-w-48">{item.label}</BreadcrumbPage>
 				{/if}
 			</BreadcrumbItem>
 		{/each}
