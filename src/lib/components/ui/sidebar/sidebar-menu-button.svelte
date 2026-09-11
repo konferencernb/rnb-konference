@@ -55,14 +55,29 @@
 
 	const sidebar = useSidebar();
 
-	const buttonProps = $derived({
-		class: cn(sidebarMenuButtonVariants({ variant, size }), className),
-		'data-slot': 'sidebar-menu-button',
-		'data-sidebar': 'menu-button',
-		'data-size': size,
-		'data-active': isActive,
-		...restProps
-	});
+	// Selecting an item is the whole point of opening the mobile sidebar in
+	// the first place — leaving it open afterwards means the drawer just
+	// sits there over the page the user navigated to until they close it
+	// themselves. Composed via mergeProps (not spread) so any onclick a
+	// caller passes through `restProps` still fires too, instead of one
+	// silently overwriting the other.
+	function closeOnMobile() {
+		if (sidebar.isMobile) sidebar.setOpenMobile(false);
+	}
+
+	const buttonProps = $derived(
+		mergeProps(
+			{
+				class: cn(sidebarMenuButtonVariants({ variant, size }), className),
+				'data-slot': 'sidebar-menu-button',
+				'data-sidebar': 'menu-button',
+				'data-size': size,
+				'data-active': isActive,
+				onclick: closeOnMobile
+			},
+			restProps
+		)
+	);
 </script>
 
 {#snippet Button({ props }: { props?: Record<string, unknown> })}
