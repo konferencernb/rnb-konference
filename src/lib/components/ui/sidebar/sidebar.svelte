@@ -20,6 +20,32 @@
 	} = $props();
 
 	const sidebar = useSidebar();
+
+	// bits-ui's own Escape/outside-click dismissal doesn't fire reliably for
+	// this Sheet in practice (confirmed live — neither Escape nor a click on
+	// the overlay ever invokes onOpenChange), so this is a direct fallback:
+	// while the mobile sheet is open, closes it on Escape or on any pointer
+	// press that lands outside the sheet's own DOM node (`ref`, already
+	// bound to that node below).
+	$effect(() => {
+		if (!sidebar.isMobile || !sidebar.openMobile) return;
+
+		function onKeydown(event: KeyboardEvent) {
+			if (event.key === 'Escape') sidebar.setOpenMobile(false);
+		}
+		function onPointerDown(event: PointerEvent) {
+			if (ref && !ref.contains(event.target as Node)) {
+				sidebar.setOpenMobile(false);
+			}
+		}
+
+		document.addEventListener('keydown', onKeydown);
+		document.addEventListener('pointerdown', onPointerDown);
+		return () => {
+			document.removeEventListener('keydown', onKeydown);
+			document.removeEventListener('pointerdown', onPointerDown);
+		};
+	});
 </script>
 
 {#if collapsible === 'none'}
@@ -34,7 +60,11 @@
 		{@render children?.()}
 	</div>
 {:else if sidebar.isMobile}
-	<Sheet.Root bind:open={() => sidebar.openMobile, (v) => sidebar.setOpenMobile(v)} {...restProps}>
+	<Sheet.Root
+		open={sidebar.openMobile}
+		onOpenChange={(v) => sidebar.setOpenMobile(v)}
+		{...restProps}
+	>
 		<Sheet.Content
 			bind:ref
 			data-sidebar="sidebar"

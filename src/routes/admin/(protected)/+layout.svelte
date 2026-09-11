@@ -6,7 +6,6 @@
 	import LayoutDashboard from '@lucide/svelte/icons/layout-dashboard';
 	import LogOut from '@lucide/svelte/icons/log-out';
 	import ScrollText from '@lucide/svelte/icons/scroll-text';
-	import ShieldCheck from '@lucide/svelte/icons/shield-check';
 	import UserRound from '@lucide/svelte/icons/user-round';
 	import Users from '@lucide/svelte/icons/users';
 	import { authClient } from '$lib/auth-client';
@@ -109,15 +108,17 @@
 <SidebarProvider>
 	<Sidebar collapsible="icon" class="border-e-0 shadow-[2px_0_12px_-2px_rgba(0,0,0,0.08)]">
 		<SidebarHeader>
-			<div class="flex items-center gap-2 py-1.5">
-				<span
-					class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground"
-				>
-					<ShieldCheck class="size-4" />
-				</span>
-				<span class="text-sm font-semibold group-data-[collapsible=icon]:hidden">
-					Administrace
-				</span>
+			<div class="flex items-center py-1.5 group-data-[collapsible=icon]:hidden">
+				<picture>
+					<source srcset="/logo-rnb-full-white.svg" media="(prefers-color-scheme: dark)" />
+					<img
+						src="/logo-rnb-full.svg"
+						alt="Rehabilitační Nemocnice Beroun & AKESO"
+						class="h-9 w-auto"
+						width="689"
+						height="132"
+					/>
+				</picture>
 			</div>
 		</SidebarHeader>
 		<SidebarContent>
