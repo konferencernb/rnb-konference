@@ -48,15 +48,7 @@
 					<Input id="email" type="email" autocomplete="email" bind:value={email} required />
 				</div>
 				<div class="flex flex-col gap-1.5">
-					<div class="flex items-center justify-between">
-						<Label for="password">Heslo</Label>
-						<a
-							href={resolve('/zapomenute-heslo')}
-							class="text-xs text-muted-foreground hover:text-foreground hover:underline"
-						>
-							Zapomenuté heslo?
-						</a>
-					</div>
+					<Label for="password">Heslo</Label>
 					<Input
 						id="password"
 						type="password"
@@ -72,6 +64,12 @@
 					{submitting ? 'Přihlašování…' : 'Přihlásit se'}
 				</Button>
 			</form>
+			<a
+				href={resolve('/zapomenute-heslo')}
+				class="text-center text-xs text-muted-foreground hover:text-foreground hover:underline"
+			>
+				Zapomenuté heslo?
+			</a>
 		</CardContent>
 	</Card>
 </div>
