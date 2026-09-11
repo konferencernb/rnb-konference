@@ -10,6 +10,8 @@
 	import UserRound from '@lucide/svelte/icons/user-round';
 	import Users from '@lucide/svelte/icons/users';
 	import { authClient } from '$lib/auth-client';
+	import Breadcrumbs from '$lib/components/admin/breadcrumbs.svelte';
+	import { formatCustomerName } from '$lib/format-name';
 	import { Avatar, AvatarFallback } from '$lib/components/ui/avatar';
 	import {
 		DropdownMenu,
@@ -40,6 +42,63 @@
 		{ href: resolve('/admin/uzivatele'), label: 'Uživatelé', icon: Users },
 		{ href: resolve('/admin/logy'), label: 'Logy', icon: ScrollText }
 	];
+
+	// Keyed on the route id (stable regardless of dynamic params) rather than
+	// guessed from the URL — dynamic segments pull their label straight from
+	// the already-loaded page data instead of showing a raw id in the trail.
+	const breadcrumbItems = $derived.by((): { label: string; href?: string }[] => {
+		const data = page.data as Record<string, unknown>;
+		const conference = data.conference as { id: string; title: string } | undefined;
+		const customer = data.customer as Parameters<typeof formatCustomerName>[0] | undefined;
+		const conferenceHref = conference
+			? resolve('/admin/(protected)/konference/[id]', { id: conference.id })
+			: undefined;
+
+		switch (page.route.id) {
+			case '/admin/(protected)/dashboard':
+				return [{ label: 'Dashboard' }];
+			case '/admin/(protected)/konference':
+				return [{ label: 'Konference' }];
+			case '/admin/(protected)/konference/new':
+				return [
+					{ label: 'Konference', href: resolve('/admin/konference') },
+					{ label: 'Nová konference' }
+				];
+			case '/admin/(protected)/konference/[id]':
+				return [
+					{ label: 'Konference', href: resolve('/admin/konference') },
+					{ label: conference?.title ?? '', href: conferenceHref }
+				];
+			case '/admin/(protected)/konference/[id]/sledovat':
+				return [
+					{ label: 'Konference', href: resolve('/admin/konference') },
+					{ label: conference?.title ?? '', href: conferenceHref },
+					{ label: 'Sledovat' }
+				];
+			case '/admin/(protected)/konference/[id]/pristupy':
+				return [
+					{ label: 'Konference', href: resolve('/admin/konference') },
+					{ label: conference?.title ?? '', href: conferenceHref },
+					{ label: 'Přístupy' }
+				];
+			case '/admin/(protected)/uzivatele':
+				return [{ label: 'Uživatelé' }];
+			case '/admin/(protected)/uzivatele/new':
+				return [
+					{ label: 'Uživatelé', href: resolve('/admin/uzivatele') },
+					{ label: 'Nový uživatel' }
+				];
+			case '/admin/(protected)/uzivatele/[id]':
+				return [
+					{ label: 'Uživatelé', href: resolve('/admin/uzivatele') },
+					{ label: customer ? formatCustomerName(customer) : '' }
+				];
+			case '/admin/(protected)/logy':
+				return [{ label: 'Logy přístupů' }];
+			default:
+				return [];
+		}
+	});
 
 	async function handleSignOut() {
 		await authClient.signOut();
@@ -119,8 +178,9 @@
 		</SidebarFooter>
 	</Sidebar>
 	<SidebarInset>
-		<header class="flex items-center gap-2 border-b bg-background px-4 py-2">
+		<header class="flex items-center gap-3 border-b bg-background px-4 py-2">
 			<SidebarTrigger />
+			<Breadcrumbs items={breadcrumbItems} />
 		</header>
 		<!-- SidebarInset already renders the page's <main> landmark — a nested
 		second one isn't valid HTML and confuses screen-reader navigation. -->

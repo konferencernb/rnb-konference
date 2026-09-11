@@ -2,8 +2,6 @@
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
 	import { applyAction, enhance } from '$app/forms';
-	import { resolve } from '$app/paths';
-	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
@@ -19,17 +17,11 @@
 </script>
 
 <div class="mx-auto max-w-6xl px-6 py-10">
-	<div class="flex items-center justify-between gap-4">
-		<div>
-			<h1 class="text-2xl font-bold">Nová konference</h1>
-			<p class="mt-1 text-muted-foreground">
-				Vyplňte údaje o konferenci. Přístup zákazníkům přidělíte po zaplacení zvlášť.
-			</p>
-		</div>
-		<Button href={resolve('/admin/konference')} variant="outline">
-			<ArrowLeft data-icon="inline-start" />
-			Zpět
-		</Button>
+	<div>
+		<h1 class="text-2xl font-bold">Nová konference</h1>
+		<p class="mt-1 text-muted-foreground">
+			Vyplňte údaje o konferenci. Přístup zákazníkům přidělíte po zaplacení zvlášť.
+		</p>
 	</div>
 
 	<form

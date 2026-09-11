@@ -1,5 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNull, ne } from 'drizzle-orm';
 import { resolve } from '$app/paths';
 import { db } from '$lib/server/db';
 import { accessGrant, conference, user, watchSession } from '$lib/server/db/schema';
@@ -93,5 +93,28 @@ export const actions: Actions = {
 	deleteUser: async ({ params }) => {
 		await db.delete(user).where(eq(user.id, params.id));
 		redirect(303, resolve('/admin/uzivatele'));
+	},
+
+	updateUser: async ({ request, params }) => {
+		const formData = await request.formData();
+		const firstName = formData.get('firstName')?.toString().trim();
+		const lastName = formData.get('lastName')?.toString().trim();
+		const email = formData.get('email')?.toString().trim().toLowerCase();
+
+		if (!firstName || !lastName || !email) {
+			return fail(400, { updateError: 'Vyplňte prosím všechna pole.' });
+		}
+
+		const [emailTaken] = await db
+			.select({ id: user.id })
+			.from(user)
+			.where(and(eq(user.email, email), ne(user.id, params.id)));
+		if (emailTaken) {
+			return fail(400, { updateError: 'Tento email už používá jiný účet.' });
+		}
+
+		await db.update(user).set({ firstName, lastName, email }).where(eq(user.id, params.id));
+
+		return { updated: true };
 	}
 };
