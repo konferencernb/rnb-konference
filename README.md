@@ -16,7 +16,7 @@ on SvelteKit, Postgres, and a full shadcn-svelte component library.
 - **UI components:** [shadcn-svelte](https://shadcn-svelte.com) (all components installed) + [lucide](https://lucide.dev) icons
 - **Auth:** [better-auth](https://www.better-auth.com)
 - **Database:** [Drizzle ORM](https://orm.drizzle.team) + PostgreSQL
-- **Email:** [nodemailer](https://nodemailer.com) over plain SMTP (access-granted + invite emails)
+- **Email:** [Microsoft Graph API](https://learn.microsoft.com/graph/api/user-sendmail) (`sendMail`, Client Credentials auth) — access-granted, invite, and password-reset emails
 - **Testing:** [Vitest](https://vitest.dev)
 - **Tooling:** Prettier, ESLint, Husky
 
@@ -62,17 +62,16 @@ a variable is added, renamed, or removed.
 | `DATABASE_URL`       | PostgreSQL connection string, e.g. `postgres://user:pass@localhost:5432/db`. Used by Drizzle and better-auth.                                                                                            |
 | `ORIGIN`             | The public origin of the app (e.g. `http://localhost:5173` in dev). Required by SvelteKit for form actions/CSRF, by better-auth as its `baseURL`, and to build the invite-completion link sent by email. |
 | `BETTER_AUTH_SECRET` | Secret used by better-auth to sign sessions/tokens. Generate a high-entropy 32+ character value for production — see the [better-auth docs](https://www.better-auth.com/docs/installation).              |
-| `SMTP_HOST`          | SMTP server host for outgoing email (access-granted notifications, invite emails).                                                                                                                       |
-| `SMTP_PORT`          | SMTP server port, defaults to `587` if unset.                                                                                                                                                            |
-| `SMTP_USER`          | SMTP auth username.                                                                                                                                                                                      |
-| `SMTP_PASSWORD`      | SMTP auth password.                                                                                                                                                                                      |
-| `SMTP_FROM`          | The `From:` address used on outgoing emails.                                                                                                                                                             |
+| `MS_TENANT_ID`       | Microsoft Entra tenant ID for the app registration used to send email via Graph API.                                                                                                                     |
+| `MS_CLIENT_ID`       | Client ID of that app registration. Needs the application permission `Mail.Send` with admin consent, restricted (via an Exchange Online application access policy) to only the `MAIL_FROM` mailbox.      |
+| `MS_CLIENT_SECRET`   | Client secret for that app registration.                                                                                                                                                                 |
+| `MAIL_FROM`          | The mailbox email is sent as/from (e.g. `konference.rnb@nember.cz`) — the app authenticates as itself (Client Credentials) but sends via `/users/{MAIL_FROM}/sendMail`.                                  |
 
 Local defaults in `.env.example` match `compose.yaml` (the Docker Postgres
 container), so `bun run db:start` + the default `DATABASE_URL` work together
-out of the box. The `SMTP_*` variables are blank by default — with any of
-`SMTP_HOST`/`SMTP_USER`/`SMTP_PASSWORD`/`SMTP_FROM` empty, `$lib/server/email.ts`
-skips sending and just logs a warning, so email is entirely optional in dev.
+out of the box. The `MS_*`/`MAIL_FROM` variables are blank by default — with
+any of them empty, `$lib/server/email.ts` skips sending and just logs a
+warning, so email is entirely optional in dev.
 
 > To deploy this app you'll need to swap `@sveltejs/adapter-auto` for an [adapter](https://svelte.dev/docs/kit/adapters) matching your target platform.
 
@@ -111,7 +110,7 @@ src/
       conferences.ts           Conference listing, revenue total, deactivation
       customers.ts             Customer (non-admin user) listing
       invites.ts               Admin-side invite creation + invite-completion flow
-      email.ts                 nodemailer wrapper — access-granted + invite emails
+      email.ts                 Microsoft Graph API sendMail wrapper — access-granted + invite emails
       sanitize.ts               Server-side HTML sanitization for rich-text descriptions
       watch-tracking.ts         Heartbeat recording + every "who watched what" query
       db/

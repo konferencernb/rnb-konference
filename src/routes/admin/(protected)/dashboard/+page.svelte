@@ -67,7 +67,7 @@
 						<EmptyDescription>Zatím nejsou žádní uživatelé.</EmptyDescription>
 					</Empty>
 				{:else}
-					<div class="flex flex-col gap-1">
+					<div class="flex max-h-131 flex-col gap-1 overflow-y-auto pr-1">
 						{#each data.usersByWatchTime as viewer (viewer.userId)}
 							<a
 								href={resolve('/admin/(protected)/uzivatele/[id]', { id: viewer.userId })}

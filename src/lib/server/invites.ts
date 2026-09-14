@@ -40,9 +40,14 @@ export async function createInvite(input: { firstName: string; lastName: string;
 	// is correct for an href rendered in a page but breaks for a URL that's
 	// going into an email, where there's no "current page" to resolve against.
 	const inviteUrl = `${env.ORIGIN}/dokonceni-registrace/${token}`;
-	await sendInviteEmail(created.email, created.firstName, created.lastName, inviteUrl);
+	const emailSent = await sendInviteEmail(
+		created.email,
+		created.firstName,
+		created.lastName,
+		inviteUrl
+	);
 
-	return { user: created };
+	return { user: created, emailSent };
 }
 
 export async function getInviteByToken(token: string) {

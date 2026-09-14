@@ -43,12 +43,16 @@ export const auth = betterAuth({
 			// direct string, never via a request-relative helper, and here that
 			// means going straight to our own page instead of better-auth's.
 			const resetUrl = `${env.ORIGIN}/obnoveni-hesla/${token}`;
-			await sendPasswordResetEmail(
+			// Fire-and-forget: the token is already persisted, so the reset link
+			// works whether or not this send succeeds — awaiting it would let a
+			// slow or unreachable mail API stall the whole request (the
+			// "Odesílání…" button that never finishes).
+			void sendPasswordResetEmail(
 				user.email,
 				found?.firstName ?? null,
 				found?.lastName ?? null,
 				resetUrl
-			);
+			).catch((error) => console.error('sendPasswordResetEmail failed:', error));
 		},
 		// A customer can end up setting their password for the first time via
 		// "Zapomenuté heslo" instead of the invite-completion link (e.g. they

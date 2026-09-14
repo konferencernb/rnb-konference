@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import ConferenceCard from '$lib/components/conference-card.svelte';
 	import { Empty, EmptyDescription } from '$lib/components/ui/empty';
+	import { NativeSelect, NativeSelectOption } from '$lib/components/ui/native-select';
 	import { Spinner } from '$lib/components/ui/spinner';
 	import { shouldPlayIntroAnimation } from '$lib/intro-animation';
 	import type { PageData } from './$types';
@@ -15,11 +18,30 @@
 	let loadingMore = $state(false);
 	let sentinel = $state<HTMLDivElement>();
 
+	// Re-syncs whenever `data` changes — which, for this page, only happens
+	// when changeSort()'s goto() re-runs the load function. loadMore() below
+	// fetches directly instead of navigating, so it never triggers this.
+	$effect(() => {
+		conferences = data.conferences;
+		hasMore = data.hasMore;
+	});
+
+	// The sort has to be applied server-side (not just re-ordering the
+	// already-loaded page client-side) so "load more" keeps paging through a
+	// consistent order instead of jumbling once a later page arrives.
+	function changeSort(value: string) {
+		goto(resolve(`/(public)/konference?sort=${value}`), {
+			invalidateAll: true,
+			keepFocus: true,
+			noScroll: true
+		});
+	}
+
 	async function loadMore() {
 		if (loadingMore || !hasMore) return;
 		loadingMore = true;
 
-		const response = await fetch(`/api/konference?offset=${conferences.length}`);
+		const response = await fetch(`/api/konference?offset=${conferences.length}&sort=${data.sort}`);
 		const page = await response.json();
 
 		conferences = [...conferences, ...page.conferences];
@@ -43,7 +65,7 @@
 </script>
 
 <section class="bg-linear-to-b from-accent-soft to-background">
-	<div class="mx-auto max-w-6xl px-6 pt-16">
+	<div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 pt-16">
 		<h1
 			class="text-4xl font-bold tracking-tight {playIntro
 				? 'animate-in duration-700 fade-in slide-in-from-top-4'
@@ -51,6 +73,17 @@
 		>
 			Konference
 		</h1>
+		<NativeSelect
+			value={data.sort}
+			onchange={(event) => changeSort(event.currentTarget.value)}
+			aria-label="Řadit podle"
+		>
+			<NativeSelectOption value="default">Výchozí řazení</NativeSelectOption>
+			<NativeSelectOption value="oldest">Od nejstarší</NativeSelectOption>
+			<NativeSelectOption value="newest">Od nejnovější</NativeSelectOption>
+			<NativeSelectOption value="purchased">Podle mých zakoupených</NativeSelectOption>
+			<NativeSelectOption value="unpurchased">Podle nezakoupených</NativeSelectOption>
+		</NativeSelect>
 	</div>
 </section>
 

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import FileSpreadsheet from '@lucide/svelte/icons/file-spreadsheet';
 	import Plus from '@lucide/svelte/icons/plus';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
@@ -64,6 +65,14 @@
 				bind:value={searchQuery}
 				class="w-80"
 			/>
+			<Button
+				href={resolve('/admin/uzivatele/import')}
+				variant="outline"
+				size="icon"
+				aria-label="Import z Excelu"
+			>
+				<FileSpreadsheet class="size-4" />
+			</Button>
 			<Button href={resolve('/admin/uzivatele/new')} size="icon" aria-label="Přidat uživatele">
 				<Plus class="size-4" />
 			</Button>
