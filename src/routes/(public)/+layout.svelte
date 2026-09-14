@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Footer from '$lib/components/footer.svelte';
+	import LiveBanner from '$lib/components/live-banner.svelte';
 	import Navbar from '$lib/components/navbar.svelte';
 	import type { LayoutData } from './$types';
 
@@ -7,6 +8,7 @@
 </script>
 
 <div class="public-shell flex min-h-screen flex-col">
+	<LiveBanner conference={data.liveConference} />
 	<Navbar user={data.user} />
 	<main class="flex-1">
 		{@render children()}

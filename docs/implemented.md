@@ -350,3 +350,32 @@ dashboard instead of the homepage).
 Implemented the base application UI (layout, `Navbar`, `Footer`, and other
 reusable components) following the direction in `docs/concepts/ui`, built with
 shadcn-svelte components wherever practical.
+
+## Public conference list: sort + site-wide live banner
+
+`/konference` has a sort `NativeSelect` next to the "Konference" heading —
+default, oldest/newest (by `startsAt`), and "moje zakoupené"/"nezakoupené"
+(unlocked-first / locked-first, via a `LEFT JOIN` on `accessGrant` scoped to
+the current user). The sort has to be applied server-side, not just on the
+already-fetched page, so "load more" keeps paging through one consistent
+order — `listConferencesPage` (`$lib/server/conferences.ts`) takes a `sort`
+param, and both `/konference`'s own load and `/api/konference` (the infinite
+-scroll endpoint) read it from the `?sort=` query string.
+"Purchased"/"unpurchased" only apply for a logged-in, non-admin customer —
+an admin sees everything unlocked regardless of their own grants, so it
+falls back to the default order for them.
+
+Selecting an option calls `goto()` with the updated `?sort=`, re-running the
+page's load function; local `conferences`/`hasMore` state re-syncs from
+`data` via an `$effect` (not captured once at mount) so the reset is picked
+up correctly.
+
+Separately, `getLiveConference()` backs a site-wide banner
+(`$lib/components/live-banner.svelte`, mounted in `(public)/+layout.svelte`
+above the `Navbar`) that appears on every public page whenever a conference
+is live: a pulsing dot, "ŽIVĚ", the conference title, a "Sledovat stream"
+button, and an X to dismiss. Dismissing writes the conference's id to
+`localStorage` (read/written client-side only — accessing it during SSR
+would throw), so closing it sticks past a reload for that specific stream
+but the banner reappears on its own the next time a _different_ conference
+goes live.
