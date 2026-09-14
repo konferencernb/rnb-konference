@@ -9,3 +9,4 @@ export const task = pgTable('task', {
 export * from './auth.schema';
 export * from './conference.schema';
 export * from './user-invite.schema';
+export * from './email-log.schema';

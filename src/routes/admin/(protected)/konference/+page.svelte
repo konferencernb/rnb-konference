@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import FileSpreadsheet from '@lucide/svelte/icons/file-spreadsheet';
 	import Plus from '@lucide/svelte/icons/plus';
 	import ConferenceCard from '$lib/components/conference-card.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -22,6 +23,14 @@
 		<h1 class="text-2xl font-bold">Konference</h1>
 		<div class="flex items-center gap-2">
 			<Input type="text" placeholder="Hledat podle názvu…" bind:value={searchQuery} class="w-80" />
+			<Button
+				href={resolve('/admin/konference/import')}
+				variant="outline"
+				size="icon"
+				aria-label="Import z Excelu"
+			>
+				<FileSpreadsheet class="size-4" />
+			</Button>
 			<Button href={resolve('/admin/konference/new')} size="icon" aria-label="Nová konference">
 				<Plus class="size-4" />
 			</Button>

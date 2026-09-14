@@ -117,7 +117,7 @@
 				</span>
 				<ConferenceStatusBadge status={conference.status} />
 			</div>
-			<h3 class="mt-auto text-lg font-semibold">{conference.title}</h3>
+			<h3 class="mt-auto line-clamp-2 text-lg font-semibold">{conference.title}</h3>
 			{#if restoreAction}
 				<form method="POST" action={restoreAction} use:enhance class="pointer-events-auto mt-1">
 					<input type="hidden" name="conferenceId" value={conference.id} />
@@ -163,8 +163,9 @@
 				<AlertDialogHeader>
 					<AlertDialogTitle>Smazat konferenci</AlertDialogTitle>
 					<AlertDialogDescription>
-						Opravdu chcete smazat konferenci „{conference.title}“? Přestane se kdekoliv v aplikaci
-						zobrazovat.
+						Opravdu chcete smazat tuto konferenci? Přestane se kdekoliv v aplikaci zobrazovat.
+						<span class="mt-1 block truncate font-medium text-foreground">„{conference.title}“</span
+						>
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<form

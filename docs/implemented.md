@@ -140,19 +140,57 @@ concurrent viewers _over time_ — a cumulative row can't do that).
 
 ## Transactional email
 
-Both emails the app sends (invite, access-granted) go through nodemailer
-(`$lib/server/email.ts`, SMTP credentials in `.env` — see README) and share
-one "bulletproof" HTML layout (`$lib/server/email-template.ts`): table-based
-markup, inline styles only, MSO conditional comments for Outlook desktop's
-Word rendering engine, no flexbox/grid/background-images, a hidden preheader,
-and a plain-text fallback alongside every HTML body — chosen to render
+All three emails the app sends (invite, password-reset, access-granted) go
+through Microsoft Graph API's `sendMail` (`$lib/server/email.ts`, Client
+Credentials auth — `MS_TENANT_ID`/`MS_CLIENT_ID`/`MS_CLIENT_SECRET`/
+`MAIL_FROM` in `.env`, see README) and share one "bulletproof" HTML layout
+(`$lib/server/email-template.ts`): table-based markup, inline styles only,
+MSO conditional comments for Outlook desktop's Word rendering engine, no
+flexbox/grid/background-images, a hidden preheader — chosen to render
 consistently across Outlook, Gmail, and Apple Mail rather than degrading
-gracefully in some of them. `getTransport()` sets `secure: true` only for
-port 465 (implicit TLS); other ports negotiate TLS via STARTTLS instead —
-nodemailer doesn't infer this from the port number. The invite email's
-greeting uses both `firstName` and `lastName`, and both emails' footers
-include a "V případě problémů se obraťte na community@nember.cz" contact
-line (in the HTML and the plain-text body).
+gracefully in some of them. The invite email's greeting uses both
+`firstName` and `lastName`, and every email's footer includes a "V případě
+problémů se obraťte na community@nember.cz" contact line.
+
+Switched from plain SMTP (nodemailer) to Graph API after confirming (via a
+Railway network capture) that outbound SMTP itself was being dropped at the
+network layer — a common policy on containerized/PaaS hosts to prevent
+abuse, unrelated to which SMTP provider was configured. Graph's `sendMail`
+goes out over HTTPS instead, sidestepping that entirely. `getAccessToken()`
+caches the Client Credentials token in memory (valid ~60–90 min) rather than
+re-authenticating before every send — the same reasoning nodemailer's
+connection pooling was chosen for at the time. `sendGraphMail()` never
+throws: every send failure (bad response, timeout, unparseable token) is
+caught and reported back as `false` instead, so one bad address can't abort
+a batch import — see `uzivatele/new/+page.server.ts`'s `importUsers`, which
+also processes people in small concurrent batches (8 at a time) rather than
+either fully serially or all at once, and returns a summary (`imported`,
+`emailsSent`, `emailsFailed`, `failedEmails`) the page renders after an
+import completes. A 401 gets one retry with a dropped/refreshed token; a 429
+respects `Retry-After` up to a cap (30s) before giving up rather than
+blocking indefinitely.
+
+**Email delivery visibility**: every send attempt (invite, password-reset,
+access-granted) is persisted to the `email_log` table — outcome plus the
+exact failure reason (HTTP status/body detail, network error message, token
+failure, etc.), not just a `console.error` line only visible to whoever
+happens to be tailing server logs. `/admin/logy` now has an "E-maily" tab
+alongside the existing access log, listing time/type/recipient/result, with
+the exact error shown (truncated, full text on hover) whenever a send
+failed. `logEmailAttempt()` (`$lib/server/email-log.ts`) never throws —
+a failure to write the log entry can't turn an otherwise-successful send
+into a failure, or vice versa.
+
+**Email delivery visibility**: every send attempt (invite, password-reset,
+access-granted) is persisted to the `email_log` table — outcome plus the
+exact failure reason (HTTP status/body detail, network error message, token
+failure, etc.), not just a `console.error` line only visible to whoever
+happens to be tailing server logs. `/admin/logy` now has an "E-maily" tab
+alongside the existing access log, listing time/type/recipient/result, with
+the exact error shown (truncated, full text on hover) whenever a send
+failed. `logEmailAttempt()` (`$lib/server/email-log.ts`) never throws —
+a failure to write the log entry can't turn an otherwise-successful send
+into a failure, or vice versa.
 
 ## Self-service password reset
 
@@ -224,7 +262,9 @@ list capped at 4 rows (live → upcoming → ended, with a divider after the
 live ones) that links straight to each conference's `/sledovat` page. Backed
 by new query helpers in `getRevenueTotal` (`conferences.ts`) and
 `getMonthlyViewershipTimeline` / `getUsersByWatchTime` /
-`getRecentConferenceWatchSummary` (`watch-tracking.ts`).
+`getRecentConferenceWatchSummary` (`watch-tracking.ts`). The "Uživatelé" card
+caps its list at a scrollable ~12 rows (`max-h-131 overflow-y-auto`) instead
+of growing the card unbounded for accounts with many customers.
 
 ## Admin sidebar redesign
 
@@ -249,6 +289,34 @@ admin nav, but `/admin/konference/delete` lists every deactivated
 conference (same card design, no trash icon, a blue "Obnovit" button in its
 place) and restores it via `restoreConference()` — both functions live in
 `conferences.ts`, alongside `listDeactivatedConferences()`.
+
+## Bulk import from Excel
+
+Two separate Excel-import entry points, sharing one component
+(`$lib/components/admin/excel-user-import.svelte`) and one server module
+(`$lib/server/user-import.ts` — `parseImportFile`/`importUsersFromRows`) so
+they can't drift apart:
+
+- **`/admin/uzivatele/import`** (icon button next to "+" on `/admin/uzivatele`):
+  creates/finds accounts by email only — Jméno/Příjmení/E-mail columns, no
+  conference assignment at all. The server strips any "Konference" column
+  the sheet might still have, rather than trusting the client to omit it.
+- **`/admin/konference/import`** (icon button next to "+" on `/admin/konference`):
+  the same account creation, plus a required "Konference" column matched by
+  exact (active) title. A row with a missing or unmatched conference name is
+  flagged inline ("Chybí konference" / "Nenalezeno: „…“") and **blocks the
+  Importovat button entirely** — letting it through would silently create the
+  person without the access the admin thinks they're granting.
+
+Shared review-screen behavior (component prop `withConference` toggles the
+conference-specific parts): rows are grouped by email into one card per
+person; a person whose email doesn't match any existing account is named in
+red with "Nový uživatel — účet i pozvánka k registraci se založí
+automaticky." — informational only, never blocking — and gets an edit
+button to fix a typo'd Jméno/Příjmení/E-mail before import (locked for an
+already-existing account, since editing here can't rename the real one).
+The "Jak má tabulka vypadat?" explanation is a `Collapsible`, closed by
+default. `getExistingEmails()` (`user-import.ts`) backs the new-user check.
 
 ## Toast notifications
 
