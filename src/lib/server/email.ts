@@ -1,8 +1,15 @@
 import nodemailer from 'nodemailer';
+import dns from 'node:dns';
 import { env } from '$env/dynamic/private';
 import { logEmailAttempt } from '$lib/server/email-log';
 import type { EmailLogType } from '$lib/server/db/schema';
 import { escapeEmailText, renderEmailLayout } from '$lib/server/email-template';
+
+// Railway resolves the SMTP host to an IPv6 address it has no working route
+// to (ENETUNREACH after a ~70s connect timeout) even though IPv4 works fine
+// — force IPv4 first so DNS resolution doesn't hand nodemailer a dead-end
+// address.
+dns.setDefaultResultOrder('ipv4first');
 
 // Cached across calls (module-level, one per server process) rather than
 // creating a fresh transport — and a fresh TCP/TLS handshake — on every
