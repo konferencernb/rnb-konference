@@ -141,56 +141,42 @@ concurrent viewers _over time_ — a cumulative row can't do that).
 ## Transactional email
 
 All three emails the app sends (invite, password-reset, access-granted) go
-through Microsoft Graph API's `sendMail` (`$lib/server/email.ts`, Client
-Credentials auth — `MS_TENANT_ID`/`MS_CLIENT_ID`/`MS_CLIENT_SECRET`/
-`MAIL_FROM` in `.env`, see README) and share one "bulletproof" HTML layout
-(`$lib/server/email-template.ts`): table-based markup, inline styles only,
-MSO conditional comments for Outlook desktop's Word rendering engine, no
-flexbox/grid/background-images, a hidden preheader — chosen to render
+through nodemailer over SMTP (`$lib/server/email.ts`, `SMTP_HOST`/`SMTP_PORT`/
+`SMTP_USER`/`SMTP_PASSWORD`/`SMTP_FROM` in `.env`, see README) and share one
+"bulletproof" HTML layout (`$lib/server/email-template.ts`): table-based
+markup, inline styles only, MSO conditional comments for Outlook desktop's
+Word rendering engine, no flexbox/grid/background-images, a hidden preheader,
+and a plain-text fallback alongside every HTML body — chosen to render
 consistently across Outlook, Gmail, and Apple Mail rather than degrading
-gracefully in some of them. The invite email's greeting uses both
-`firstName` and `lastName`, and every email's footer includes a "V případě
-problémů se obraťte na community@nember.cz" contact line.
+gracefully in some of them. `getTransport()` sets `secure: true` only for
+port 465 (implicit TLS); other ports negotiate TLS via STARTTLS instead —
+nodemailer doesn't infer this from the port number. The invite email's
+greeting uses both `firstName` and `lastName`, and every email's footer
+includes a "V případě problémů se obraťte na community@nember.cz" contact
+line. `sendSmtpMail()` never throws: every send failure (bad response,
+connection error, SMTP not configured) is caught and reported back as
+`false` instead, so one bad address can't abort a batch import — see
+`user-import.ts`'s `importUsersFromRows`.
 
-Switched from plain SMTP (nodemailer) to Graph API after confirming (via a
-Railway network capture) that outbound SMTP itself was being dropped at the
-network layer — a common policy on containerized/PaaS hosts to prevent
-abuse, unrelated to which SMTP provider was configured. Graph's `sendMail`
-goes out over HTTPS instead, sidestepping that entirely. `getAccessToken()`
-caches the Client Credentials token in memory (valid ~60–90 min) rather than
-re-authenticating before every send — the same reasoning nodemailer's
-connection pooling was chosen for at the time. `sendGraphMail()` never
-throws: every send failure (bad response, timeout, unparseable token) is
-caught and reported back as `false` instead, so one bad address can't abort
-a batch import — see `uzivatele/new/+page.server.ts`'s `importUsers`, which
-also processes people in small concurrent batches (8 at a time) rather than
-either fully serially or all at once, and returns a summary (`imported`,
-`emailsSent`, `emailsFailed`, `failedEmails`) the page renders after an
-import completes. A 401 gets one retry with a dropped/refreshed token; a 429
-respects `Retry-After` up to a cap (30s) before giving up rather than
-blocking indefinitely.
+**Known risk on Railway**: a network capture earlier confirmed Railway drops
+outbound SMTP at the network layer regardless of which SMTP provider is
+configured — this is why the app briefly ran on Microsoft Graph API's
+`sendMail` instead (HTTPS-based, sidesteps the SMTP block entirely). Reverted
+back to SMTP for local/off-Railway testing; if this starts silently failing
+again in the Railway-hosted environment, that network-layer block is almost
+certainly why — see git history around the Graph API rewrite for the
+working alternative.
 
 **Email delivery visibility**: every send attempt (invite, password-reset,
 access-granted) is persisted to the `email_log` table — outcome plus the
-exact failure reason (HTTP status/body detail, network error message, token
-failure, etc.), not just a `console.error` line only visible to whoever
-happens to be tailing server logs. `/admin/logy` now has an "E-maily" tab
-alongside the existing access log, listing time/type/recipient/result, with
-the exact error shown (truncated, full text on hover) whenever a send
-failed. `logEmailAttempt()` (`$lib/server/email-log.ts`) never throws —
-a failure to write the log entry can't turn an otherwise-successful send
-into a failure, or vice versa.
-
-**Email delivery visibility**: every send attempt (invite, password-reset,
-access-granted) is persisted to the `email_log` table — outcome plus the
-exact failure reason (HTTP status/body detail, network error message, token
-failure, etc.), not just a `console.error` line only visible to whoever
-happens to be tailing server logs. `/admin/logy` now has an "E-maily" tab
-alongside the existing access log, listing time/type/recipient/result, with
-the exact error shown (truncated, full text on hover) whenever a send
-failed. `logEmailAttempt()` (`$lib/server/email-log.ts`) never throws —
-a failure to write the log entry can't turn an otherwise-successful send
-into a failure, or vice versa.
+exact failure reason, not just a `console.error` line only visible to
+whoever happens to be tailing server logs. `/admin/logy` now has an
+"E-maily" tab alongside the existing access log, listing
+time/type/recipient/result, with the exact error shown (truncated, full
+text on hover) whenever a send failed. `logEmailAttempt()`
+(`$lib/server/email-log.ts`) never throws — a failure to write the log
+entry can't turn an otherwise-successful send into a failure, or vice
+versa.
 
 ## Self-service password reset
 
