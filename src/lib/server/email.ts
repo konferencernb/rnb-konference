@@ -4,21 +4,44 @@ import { logEmailAttempt } from '$lib/server/email-log';
 import type { EmailLogType } from '$lib/server/db/schema';
 import { escapeEmailText, renderEmailLayout } from '$lib/server/email-template';
 
+// Cached across calls (module-level, one per server process) rather than
+// creating a fresh transport — and a fresh TCP/TLS handshake — on every
+// single send. `pool: true` additionally lets nodemailer reuse the same
+// handful of SMTP connections across sends instead of one-per-message.
+let transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
+
 function getTransport() {
 	if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASSWORD || !env.SMTP_FROM) {
 		return null;
 	}
 
+	if (transporter) {
+		return transporter;
+	}
+
 	const port = Number(env.SMTP_PORT) || 587;
 
-	return nodemailer.createTransport({
+	transporter = nodemailer.createTransport({
 		host: env.SMTP_HOST,
 		port,
 		// Port 465 is implicit TLS; everything else (587, 25) negotiates TLS via
 		// STARTTLS instead — nodemailer doesn't infer this from the port itself.
 		secure: port === 465,
-		auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD }
+		auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD },
+
+		pool: true,
+		maxConnections: 3,
+		maxMessages: 100,
+
+		// Bounded so a stalled connection can't hang the request behind it
+		// indefinitely — same reasoning as every other outbound call in this
+		// app that's bounded with a timeout.
+		connectionTimeout: 10_000,
+		greetingTimeout: 10_000,
+		socketTimeout: 30_000
 	});
+
+	return transporter;
 }
 
 // Never throws — a failed send is reported back as `false` so a batch import
@@ -44,12 +67,34 @@ async function sendSmtpMail(
 	}
 
 	try {
-		await transport.sendMail({ from: env.SMTP_FROM, to, subject, text, html });
+		const startedAt = Date.now();
+
+		console.log(`[EMAIL] Sending ${type} to ${to}`);
+
+		const info = await transport.sendMail({
+			from: env.SMTP_FROM,
+			to,
+			subject,
+			text,
+			html
+		});
+
+		const duration = Date.now() - startedAt;
+
+		console.log(`[EMAIL] SMTP accepted ${type} to ${to} in ${duration} ms`, {
+			messageId: info.messageId,
+			accepted: info.accepted,
+			rejected: info.rejected,
+			response: info.response
+		});
+
 		await logEmailAttempt(type, to, true, null);
 		return true;
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
-		console.error('Email send errored:', to, message);
+
+		console.error(`[EMAIL] Send failed ${type} to ${to}:`, message);
+
 		await logEmailAttempt(type, to, false, message);
 		return false;
 	}
