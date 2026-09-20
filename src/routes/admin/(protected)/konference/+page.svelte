@@ -21,8 +21,13 @@
 <div class="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10">
 	<div class="flex flex-wrap items-center justify-between gap-4">
 		<h1 class="text-2xl font-bold">Konference</h1>
-		<div class="flex items-center gap-2">
-			<Input type="text" placeholder="Hledat podle názvu…" bind:value={searchQuery} class="w-80" />
+		<div class="flex w-full items-center gap-2 sm:w-auto">
+			<Input
+				type="text"
+				placeholder="Hledat podle názvu…"
+				bind:value={searchQuery}
+				class="min-w-0 flex-1 sm:w-80 sm:flex-none"
+			/>
 			<Button
 				href={resolve('/admin/konference/import')}
 				variant="outline"
