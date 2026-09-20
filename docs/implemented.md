@@ -341,7 +341,7 @@ shadcn-svelte components wherever practical.
 ## Public conference list: sort + site-wide live banner
 
 `/konference` has a sort `NativeSelect` next to the "Konference" heading —
-default, oldest/newest (by `startsAt`), and "moje zakoupené"/"nezakoupené"
+default, oldest/newest (by `startsAt`), and "zakoupené"/"nezakoupené"
 (unlocked-first / locked-first, via a `LEFT JOIN` on `accessGrant` scoped to
 the current user). The sort has to be applied server-side, not just on the
 already-fetched page, so "load more" keeps paging through one consistent

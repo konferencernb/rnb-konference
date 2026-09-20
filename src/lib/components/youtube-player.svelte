@@ -108,13 +108,12 @@
 		if (playing && !isFullscreen) scheduleHide();
 	}
 
-	// The idle timer above is for "stopped moving but the pointer's still
-	// there" — leaving the player entirely is a stronger, immediate signal
-	// that the hover is over, so don't make it wait out the same 4.5s. Only
-	// while actually playing: if paused, controls are meant to stay up
-	// regardless of the pointer, per the effect below.
-	function onPointerLeave() {
-		if (!playing || isFullscreen) return;
+	// Leaving the player is an immediate "hover is over" signal — but only for a
+	// mouse. A finger lifting fires pointerleave right after pointerup too, so
+	// on touch this hid the controls the instant a tap revealed them, and they
+	// then slid back in once the pause reached us from YouTube (in, out, in).
+	function onPointerLeave(event: PointerEvent) {
+		if (event.pointerType !== 'mouse' || !playing || isFullscreen) return;
 		if (hideTimer) clearTimeout(hideTimer);
 		showControls = false;
 	}
@@ -173,6 +172,10 @@
 						}, 500);
 					},
 					onStateChange: (event: YT.OnStateChangeEvent) => {
+						// Buffering is a transient stall inside an ongoing play/pause, not
+						// a change of it — counting it as "not playing" flashed the pause
+						// overlay and re-showed the controls on every stall or seek.
+						if (event.data === YT.PlayerState.BUFFERING) return;
 						const nowPlaying = event.data === YT.PlayerState.PLAYING;
 						if (nowPlaying && !hasStarted) {
 							hasStarted = true;

@@ -81,7 +81,7 @@
 			<NativeSelectOption value="default">Výchozí řazení</NativeSelectOption>
 			<NativeSelectOption value="oldest">Od nejstarší</NativeSelectOption>
 			<NativeSelectOption value="newest">Od nejnovější</NativeSelectOption>
-			<NativeSelectOption value="purchased">Podle mých zakoupených</NativeSelectOption>
+			<NativeSelectOption value="purchased">Podle zakoupených</NativeSelectOption>
 			<NativeSelectOption value="unpurchased">Podle nezakoupených</NativeSelectOption>
 		</NativeSelect>
 	</div>
