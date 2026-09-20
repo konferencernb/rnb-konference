@@ -96,6 +96,17 @@
 	// there doing nothing when clicked, with no indication anything's wrong.
 	let playbackError = $state(!getYoutubeVideoId(videoUrl));
 
+	// The embed shows captions whenever the viewer's YouTube settings ask for
+	// them (or the video has auto-generated ones) — there's no playerVar that
+	// turns that off, so the captions module is unloaded once playback starts
+	// (it isn't loaded yet before that). Undocumented, but the long-standing
+	// way to do it.
+	function hideCaptions(target: YT.Player) {
+		const p = target as unknown as { unloadModule?: (name: string) => void };
+		p.unloadModule?.('captions');
+		p.unloadModule?.('cc');
+	}
+
 	function scheduleHide() {
 		if (hideTimer) clearTimeout(hideTimer);
 		hideTimer = setTimeout(() => {
@@ -105,7 +116,7 @@
 
 	function revealControls() {
 		showControls = true;
-		if (playing && !isFullscreen) scheduleHide();
+		if (playing) scheduleHide();
 	}
 
 	// Leaving the player is an immediate "hover is over" signal — but only for a
@@ -113,17 +124,15 @@
 	// on touch this hid the controls the instant a tap revealed them, and they
 	// then slid back in once the pause reached us from YouTube (in, out, in).
 	function onPointerLeave(event: PointerEvent) {
-		if (event.pointerType !== 'mouse' || !playing || isFullscreen) return;
+		if (event.pointerType !== 'mouse' || !playing) return;
 		if (hideTimer) clearTimeout(hideTimer);
 		showControls = false;
 	}
 
 	$effect(() => {
-		// Controls never auto-hide in fullscreen — with no mouse to "hover"
-		// on a touchscreen, a hidden control bar has no way back except
-		// tapping blind (the same tap the center play/pause overlay already
-		// claims), which made the exit-fullscreen button feel unresponsive.
-		if (playing && !isFullscreen) {
+		// Hidden while playing (fullscreen included), shown whenever paused. Any
+		// tap or pointer move brings them back — see revealControls.
+		if (playing) {
 			scheduleHide();
 		} else {
 			showControls = true;
@@ -176,6 +185,7 @@
 						// a change of it — counting it as "not playing" flashed the pause
 						// overlay and re-showed the controls on every stall or seek.
 						if (event.data === YT.PlayerState.BUFFERING) return;
+						if (event.data === YT.PlayerState.PLAYING) hideCaptions(event.target);
 						const nowPlaying = event.data === YT.PlayerState.PLAYING;
 						if (nowPlaying && !hasStarted) {
 							hasStarted = true;
