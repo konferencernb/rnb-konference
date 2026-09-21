@@ -11,7 +11,7 @@
 				<source srcset="/logo-rnb-full-white.svg" media="(prefers-color-scheme: dark)" />
 				<img
 					src="/logo-rnb-full.svg"
-					alt="Rehabilitační Nemocnice Beroun"
+					alt="Rehabilitační nemocnice Beroun"
 					loading="lazy"
 					decoding="async"
 					class="h-8 w-auto"

@@ -13,7 +13,7 @@ import { env } from '$env/dynamic/private';
 // misconfigured environment).
 const LOGO_URL = env.ORIGIN ? `${env.ORIGIN}/logo-rnb.png` : '';
 
-// #005795 — Rehabilitační Nemocnice Beroun brand blue (per brand manual).
+// #005795 — Rehabilitační nemocnice Beroun brand blue (per brand manual).
 const BRAND_BLUE = '#005795';
 const INK = '#101b3d';
 const MUTED = '#5b6472';
@@ -93,8 +93,8 @@ export function renderEmailLayout(options: {
 			<td style="padding: 32px 32px 20px;">
 				${
 					LOGO_URL
-						? `<img src="${LOGO_URL}" width="180" alt="Rehabilitační Nemocnice Beroun" style="display: block; width: 180px; height: auto;">`
-						: `<div style="font-family: Arial, Helvetica, sans-serif; font-size: 15px; font-weight: bold; color: ${BRAND_BLUE};">Rehabilitační Nemocnice Beroun</div>`
+						? `<img src="${LOGO_URL}" width="180" alt="Rehabilitační nemocnice Beroun" style="display: block; width: 180px; height: auto;">`
+						: `<div style="font-family: Arial, Helvetica, sans-serif; font-size: 15px; font-weight: bold; color: ${BRAND_BLUE};">Rehabilitační nemocnice Beroun</div>`
 				}
 			</td>
 		</tr>
@@ -111,7 +111,7 @@ export function renderEmailLayout(options: {
 		</tr>
 		<tr>
 			<td style="padding: 24px 32px 40px; text-align: center; font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 1.6; color: ${MUTED};">
-				Rehabilitační Nemocnice Beroun — Online konference<br>
+				Rehabilitační nemocnice Beroun — Online konference<br>
 				Tento e-mail je automatický, na tuto adresu prosím neodpovídejte.<br>
 				V případě problémů se obraťte na <a href="mailto:community@nember.cz" style="color: ${BRAND_BLUE};">community@nember.cz</a>.
 			</td>

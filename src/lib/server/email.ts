@@ -230,13 +230,13 @@ export async function sendPasswordResetEmail(
 	return sendGraphMail(
 		'password_reset',
 		to,
-		'Obnovení hesla — Online konference Rehabilitační Nemocnice Beroun',
+		'Obnovení hesla — Online konference Rehabilitační nemocnice Beroun',
 		renderEmailLayout({
 			preheader: 'Obnovte si heslo — odkaz platí 1 hodinu.',
 			heading: 'Obnovení hesla',
 			bodyHtml: `
 				<p style="margin: 0 0 14px;">${escapeEmailText(greeting)},</p>
-				<p style="margin: 0 0 14px;">požádali jste o obnovení hesla k účtu na platformě Online konference Rehabilitační Nemocnice Beroun. Tlačítkem níže si nastavte nové heslo — odkaz je platný <strong>1 hodinu</strong>.</p>
+				<p style="margin: 0 0 14px;">požádali jste o obnovení hesla k účtu na platformě Online konference Rehabilitační nemocnice Beroun. Tlačítkem níže si nastavte nové heslo — odkaz je platný <strong>1 hodinu</strong>.</p>
 				<p style="margin: 0;">Pokud jste o obnovení hesla nežádali, tento e-mail můžete ignorovat — vaše heslo zůstane beze změny.</p>
 			`,
 			ctaLabel: 'Nastavit nové heslo',
@@ -257,13 +257,13 @@ export async function sendInviteEmail(
 	return sendGraphMail(
 		'invite',
 		to,
-		'Dokončete registraci k Rehabilitační Nemocnice Beroun Online konference',
+		'Dokončete registraci k Rehabilitační nemocnice Beroun Online konference',
 		renderEmailLayout({
 			preheader: 'Dokončete registraci a nastavte si heslo — odkaz platí 7 dní.',
 			heading: 'Dokončete registraci',
 			bodyHtml: `
 				<p style="margin: 0 0 14px;">${escapeEmailText(greeting)},</p>
-				<p style="margin: 0 0 14px;">založili jsme vám účet na platformě Online konference Rehabilitační Nemocnice Beroun. Pro dokončení registrace si tlačítkem níže nastavte heslo — odkaz je platný <strong>7 dní</strong>.</p>
+				<p style="margin: 0 0 14px;">založili jsme vám účet na platformě Online konference Rehabilitační nemocnice Beroun. Pro dokončení registrace si tlačítkem níže nastavte heslo — odkaz je platný <strong>7 dní</strong>.</p>
 				<p style="margin: 0;">Po dokončení se rovnou přihlásíte.</p>
 			`,
 			ctaLabel: 'Dokončit registraci',

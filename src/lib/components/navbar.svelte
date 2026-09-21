@@ -46,7 +46,7 @@
 				<source srcset="/logo-rnb-white.svg" media="(prefers-color-scheme: dark)" />
 				<img
 					src="/logo-rnb.svg"
-					alt="Rehabilitační Nemocnice Beroun"
+					alt="Rehabilitační nemocnice Beroun"
 					class="h-9 w-auto"
 					width="342"
 					height="132"
@@ -110,7 +110,7 @@
 							<source srcset="/logo-rnb-white.svg" media="(prefers-color-scheme: dark)" />
 							<img
 								src="/logo-rnb.svg"
-								alt="Rehabilitační Nemocnice Beroun"
+								alt="Rehabilitační nemocnice Beroun"
 								class="h-9 w-auto"
 								width="342"
 								height="132"
