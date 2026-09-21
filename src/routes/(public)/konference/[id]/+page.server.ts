@@ -3,6 +3,8 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { hasConferenceAccess } from '$lib/server/access';
 import { db } from '$lib/server/db';
 import { accessLog, conference } from '$lib/server/db/schema';
+import { formatCustomerName } from '$lib/format-name';
+import { buildPayment } from '$lib/server/payment';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals, request, getClientAddress }) => {
@@ -27,7 +29,18 @@ export const load: PageServerLoad = async ({ params, locals, request, getClientA
 		});
 	}
 
+	// Only a logged-in customer without access gets payment details — the QR
+	// code is pre-filled with their name, so there's nothing to show without one.
+	const payment =
+		!unlocked && locals.user
+			? await buildPayment({
+					amount: found.price,
+					recipientMessage: formatCustomerName(locals.user)
+				})
+			: null;
+
 	return {
+		payment,
 		conference: unlocked
 			? found
 			: {

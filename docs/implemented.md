@@ -366,3 +366,23 @@ button, and an X to dismiss. Dismissing writes the conference's id to
 would throw), so closing it sticks past a reload for that specific stream
 but the banner reappears on its own the next time a _different_ conference
 goes live.
+
+## Payment details on locked conferences
+
+The "no access" state on `/konference/[id]` depends on who's looking. A
+logged-out visitor sees the price and a "Přihlásit se" button (there's no
+self-registration — accounts come from admin invites — so it also points to
+community@nember.cz for an account). A logged-in customer without access gets
+the payment instead: a QR code (Czech "QR Platba", the SPD 1.0 format,
+generated server-side with `qrcode` in `$lib/server/payment.ts` and sent to
+the page as a data URL), then an "nebo" divider and the same details as text
+(account, amount, variable symbol, message) for paying by hand.
+
+The account is a constant in `payment.ts` (7632131/0100), converted to an
+IBAN at runtime since SPD wants one. Amount is the conference's `price`. The
+variable symbol is today's date as `ddMMyyyy` in Czech time (`Europe/Prague`,
+not the server's UTC, which would be a day behind shortly after midnight).
+The message is the customer's first + last name (`formatCustomerName`); in
+the QR it's stripped of diacritics because a real banking app didn't cope with
+them (it showed "Karel Macka"), while the text under the QR keeps the full
+name. Case is left as-is.
