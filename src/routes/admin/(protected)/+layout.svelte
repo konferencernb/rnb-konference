@@ -113,7 +113,7 @@
 					<source srcset="/logo-rnb-full-white.svg" media="(prefers-color-scheme: dark)" />
 					<img
 						src="/logo-rnb-full.svg"
-						alt="Rehabilitační Nemocnice Beroun & AKESO"
+						alt="Rehabilitační nemocnice Beroun & AKESO"
 						class="h-9 w-auto"
 						width="689"
 						height="132"

@@ -65,7 +65,7 @@
 					? 'animate-in delay-100 duration-700 fade-in slide-in-from-top-4'
 					: ''}"
 			>
-				Online konference Rehabilitační Nemocnice Beroun
+				Online konference Rehabilitační nemocnice Beroun
 			</h1>
 			<p
 				class="max-w-md text-hero-foreground/80 {playIntro
@@ -173,7 +173,7 @@
 			>
 				<img
 					src="/images/prednaska2.png"
-					alt="Diskusní panel odborníků na konferenci Rehabilitační Nemocnice Beroun"
+					alt="Diskusní panel odborníků na konferenci Rehabilitační nemocnice Beroun"
 					loading="lazy"
 					decoding="async"
 					class="h-full w-full object-cover"
@@ -188,17 +188,17 @@
 					: 'opacity-0'}"
 		>
 			<h2 class="text-2xl font-bold tracking-tight sm:text-3xl">
-				Odborný obsah pod vedením specialistů Rehabilitační Nemocnice Beroun
+				Odborný obsah pod vedením specialistů Rehabilitační nemocnice Beroun
 			</h2>
 			<p class="text-muted-foreground">
-				Přednášky připravují a vedou lékaři a odborníci přímo z Rehabilitační Nemocnice Beroun.
-				Obsah je určený pro zdravotnický personál, který si chce doplnit a prohloubit odborné
-				znalosti přímo z praxe.
+				Přednášky připravují a vedou lékaři a odborníci nejen z Rehabilitační nemocnice Beroun.
+				Obsah je určený jak pro zdravotnický personál, který si chce doplnit a prohloubit odborné
+				znalosti přímo z praxe, tak pro veřejnost.
 			</p>
 			<p class="text-muted-foreground">
-				Součástí programu jsou i diskusní panely s vedoucími lékaři a zástupci nemocnic, kde se
-				probírají aktuální témata zdravotnictví, od odborné praxe až po provoz a financování
-				nemocnic. Záznam si pak můžete pustit i zpětně, kdykoliv se vám to bude hodit.
+				Součástí programu mohou být i diskusní panely s vedoucími lékaři a odborníky, kde se
+				probírají aktuální témata zdravotnictví. Záznam si můžete pustit i zpětně, kdykoliv se vám
+				to bude hodit.
 			</p>
 		</div>
 	</div>
