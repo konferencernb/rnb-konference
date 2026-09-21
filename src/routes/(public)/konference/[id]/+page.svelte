@@ -143,13 +143,16 @@
 					<dt class="text-muted-foreground">Zpráva pro příjemce</dt>
 					<dd class="font-medium">{data.payment.recipientMessage}</dd>
 				</dl>
-				<p class="flex items-center gap-2 text-sm text-muted-foreground">
-					<Mail class="size-4" />
-					Potřebujete poradit? Napište nám na
+				<div
+					class="flex flex-col items-center gap-1 text-center text-sm text-muted-foreground sm:flex-row sm:gap-1.5"
+				>
+					<span class="flex items-center gap-2"
+						><Mail class="size-4 shrink-0" />Potřebujete poradit? Napište nám na</span
+					>
 					<a href="mailto:community@nember.cz" class="text-foreground underline"
 						>community@nember.cz</a
 					>
-				</p>
+				</div>
 			</CardContent>
 		</Card>
 	{:else}
@@ -168,13 +171,16 @@
 					</p>
 				</div>
 				<Button href={resolve('/prihlaseni')}>Přihlásit se</Button>
-				<p class="flex items-center gap-2 text-sm text-muted-foreground">
-					<Mail class="size-4" />
-					Ještě nemáte účet? Napište nám na
+				<div
+					class="flex flex-col items-center gap-1 text-center text-sm text-muted-foreground sm:flex-row sm:gap-1.5"
+				>
+					<span class="flex items-center gap-2"
+						><Mail class="size-4 shrink-0" />Ještě nemáte účet? Napište nám na</span
+					>
 					<a href="mailto:community@nember.cz" class="text-foreground underline"
 						>community@nember.cz</a
 					>
-				</p>
+				</div>
 			</CardContent>
 		</Card>
 	{/if}
