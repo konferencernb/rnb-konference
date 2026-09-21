@@ -113,6 +113,7 @@ src/
       email.ts                 Microsoft Graph API sendMail wrapper — access-granted + invite emails
       sanitize.ts               Server-side HTML sanitization for rich-text descriptions
       watch-tracking.ts         Heartbeat recording + every "who watched what" query
+      payment.ts                QR Platba (SPD) code + payment details for locked conferences
       db/
         index.ts             Drizzle client
         schema.ts             Re-exports every *.schema.ts below
