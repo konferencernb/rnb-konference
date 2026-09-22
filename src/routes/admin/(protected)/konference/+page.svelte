@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import Archive from '@lucide/svelte/icons/archive';
 	import FileSpreadsheet from '@lucide/svelte/icons/file-spreadsheet';
 	import Plus from '@lucide/svelte/icons/plus';
 	import ConferenceCard from '$lib/components/conference-card.svelte';
@@ -35,6 +36,14 @@
 				aria-label="Import z Excelu"
 			>
 				<FileSpreadsheet class="size-4" />
+			</Button>
+			<Button
+				href={resolve('/admin/konference/delete')}
+				variant="outline"
+				size="icon"
+				aria-label="Deaktivované konference"
+			>
+				<Archive class="size-4" />
 			</Button>
 			<Button href={resolve('/admin/konference/new')} size="icon" aria-label="Nová konference">
 				<Plus class="size-4" />

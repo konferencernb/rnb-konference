@@ -29,15 +29,16 @@ export const load: PageServerLoad = async ({ params, locals, request, getClientA
 		});
 	}
 
-	// Only a logged-in customer without access gets payment details — the QR
-	// code is pre-filled with their name, so there's nothing to show without one.
-	const payment =
-		!unlocked && locals.user
-			? await buildPayment({
-					amount: found.price,
-					recipientMessage: formatCustomerName(locals.user)
-				})
-			: null;
+	// No login required to see the payment details — the QR code carries the
+	// visitor's name as the recipient message when they're logged in. A
+	// logged-out visitor gets a literal placeholder instead, telling them
+	// what to fill in themselves — there's no name to pre-fill for them.
+	const payment = !unlocked
+		? await buildPayment({
+				amount: found.price,
+				recipientMessage: locals.user ? formatCustomerName(locals.user) : 'VAŠE JMÉNO A PŘÍJMENÍ'
+			})
+		: null;
 
 	return {
 		payment,
