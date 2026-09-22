@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import Mail from '@lucide/svelte/icons/mail';
 	import VideoOff from '@lucide/svelte/icons/video-off';
 	import YoutubePlayer from '$lib/components/youtube-player.svelte';
 	import ConferenceStatusBadge from '$lib/components/conference-status-badge.svelte';
@@ -113,11 +112,37 @@
 			<CardContent class="flex flex-col items-center gap-6 py-10 text-center">
 				<div>
 					<p class="font-semibold">K této konferenci zatím nemáte přístup</p>
-					<p class="mt-1 text-muted-foreground">
-						Zaplaťte {data.payment.amount} Kč QR kódem nebo převodem, po přijetí platby vám přidělíme
-						trvalý přístup včetně záznamu.
-					</p>
+					<p class="mt-1 text-muted-foreground">Cena přístupu: {data.payment.amount} Kč.</p>
 				</div>
+				<ol class="flex w-full max-w-sm flex-col gap-3 text-left text-sm">
+					<li class="flex gap-3">
+						<span
+							class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary"
+							>1</span
+						>
+						<span class="pt-0.5">Zaplaťte QR kódem nebo převodem.</span>
+					</li>
+					<li class="flex gap-3">
+						<span
+							class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary"
+							>2</span
+						>
+						<span class="pt-0.5">
+							Napište na <a href="mailto:community@nember.cz" class="font-medium underline"
+								>community@nember.cz</a
+							> své jméno, příjmení a e-mail.
+						</span>
+					</li>
+					<li class="flex gap-3">
+						<span
+							class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary"
+							>3</span
+						>
+						<span class="pt-0.5">
+							Po ověření platby vám aktivujeme přístup ke konferenci i jejímu záznamu.
+						</span>
+					</li>
+				</ol>
 				<img
 					src={data.payment.qrDataUrl}
 					alt="QR kód pro platbu"
@@ -127,7 +152,7 @@
 				/>
 				<div class="flex w-full max-w-sm items-center gap-3 text-sm text-muted-foreground">
 					<Separator class="flex-1" />
-					nebo
+					nebo platbou na účet
 					<Separator class="flex-1" />
 				</div>
 				<dl class="grid w-full max-w-sm grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-left text-sm">
@@ -140,16 +165,6 @@
 					<dt class="text-muted-foreground">Zpráva pro příjemce</dt>
 					<dd class="font-medium">{data.payment.recipientMessage}</dd>
 				</dl>
-				<div
-					class="flex flex-col items-center gap-1 text-center text-sm text-muted-foreground sm:flex-row sm:gap-1.5"
-				>
-					<span class="flex items-center gap-2"
-						><Mail class="size-4 shrink-0" />Potřebujete poradit? Napište nám na</span
-					>
-					<a href="mailto:community@nember.cz" class="text-foreground underline"
-						>community@nember.cz</a
-					>
-				</div>
 			</CardContent>
 		</Card>
 	{/if}
