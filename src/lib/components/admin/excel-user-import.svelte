@@ -446,10 +446,10 @@
 					{#if withConference}
 						<p class="text-sm text-muted-foreground">
 							Soubor musí mít v prvním řádku přesně tyto sloupce: Jméno, Příjmení, E-mail a
-							Konference. Sloupec Konference musí obsahovat přesný název konference — bez něj (nebo
-							s názvem, který se nedohledá) import nepůjde spustit. Pokud chcete jednomu uživateli
-							přidělit víc konferencí, přidejte pro něj další řádek se stejným jménem a emailem, jen
-							s jinou konferencí.
+							Konference. Ve sloupci Konference se ve šabloně níže vybírá z rozbalovacího seznamu —
+							názvy konferencí se píší na druhý list „Konference“, takže se nedá překlepnout. Pokud
+							chcete jednomu uživateli přidělit víc konferencí, přidejte pro něj další řádek se
+							stejným jménem a emailem, jen s jinou konferencí.
 						</p>
 					{:else}
 						<p class="text-sm text-muted-foreground">

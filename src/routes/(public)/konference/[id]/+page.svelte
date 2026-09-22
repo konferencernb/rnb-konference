@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import Lock from '@lucide/svelte/icons/lock';
 	import Mail from '@lucide/svelte/icons/mail';
-	import { resolve } from '$app/paths';
 	import VideoOff from '@lucide/svelte/icons/video-off';
 	import YoutubePlayer from '$lib/components/youtube-player.svelte';
 	import ConferenceStatusBadge from '$lib/components/conference-status-badge.svelte';
-	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Separator } from '$lib/components/ui/separator';
 	import type { PageData } from './$types';
@@ -148,34 +145,6 @@
 				>
 					<span class="flex items-center gap-2"
 						><Mail class="size-4 shrink-0" />Potřebujete poradit? Napište nám na</span
-					>
-					<a href="mailto:community@nember.cz" class="text-foreground underline"
-						>community@nember.cz</a
-					>
-				</div>
-			</CardContent>
-		</Card>
-	{:else}
-		<Card>
-			<CardContent class="flex flex-col items-center gap-4 py-12 text-center">
-				<span
-					class="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground"
-				>
-					<Lock class="size-6" />
-				</span>
-				<div>
-					<p class="font-semibold">K této konferenci zatím nemáte přístup</p>
-					<p class="mt-1 text-muted-foreground">
-						Cena: {data.conference.price} Kč. Pro získání přístupu se přihlaste, po přihlášení vám zobrazíme
-						platební údaje a QR kód.
-					</p>
-				</div>
-				<Button href={resolve('/prihlaseni')}>Přihlásit se</Button>
-				<div
-					class="flex flex-col items-center gap-1 text-center text-sm text-muted-foreground sm:flex-row sm:gap-1.5"
-				>
-					<span class="flex items-center gap-2"
-						><Mail class="size-4 shrink-0" />Ještě nemáte účet? Napište nám na</span
 					>
 					<a href="mailto:community@nember.cz" class="text-foreground underline"
 						>community@nember.cz</a

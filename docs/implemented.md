@@ -305,6 +305,19 @@ already-existing account, since editing here can't rename the real one).
 The "Jak má tabulka vypadat?" explanation is a `Collapsible`, closed by
 default. `getExistingEmails()` (`user-import.ts`) backs the new-user check.
 
+Re-importing an email that already has an account never creates a second one
+— `importUsersFromRows` looks the user up by email first and only calls
+`createInvite` when it's missing. Per conference, `grantConferenceByTitle`
+only ever inserts a grant (skipping one that already exists); nothing in the
+import path deletes an existing grant, so a person's earlier conference
+access survives a later import that only lists their new conference.
+
+`/sablony/import-uzivatelu.xlsx` (the `withConference` template) has a second
+"Konference" sheet: the admin lists conference names there, and the
+"Konference" column on the "Uživatelé" sheet is a dropdown restricted to that
+list (Excel data validation), so whoever fills in rows can only pick an
+existing name rather than mistype one.
+
 ## Toast notifications
 
 The shadcn-svelte `sonner` component (`$lib/components/ui/sonner`) was
