@@ -15,16 +15,18 @@ function czAccountToIban(accountNumber: string, bankCode: string, prefix = '') {
 	return `CZ${String(checkDigits).padStart(2, '0')}${bban}`;
 }
 
-// Variable symbol: today's date as ddMMyyyy, taken in Czech time — the server
-// runs in UTC, which would give yesterday's date for anyone paying shortly
-// after midnight.
-export function todayVariableSymbol(now = new Date()) {
+// Variable symbol: the conference's date as ddMMyyyy, taken in Czech time —
+// the server runs in UTC, which would shift the date for anything close to
+// midnight. Not "today": an admin reconciling payments against the bank
+// statement needs the VS to identify *which conference* it was for, and a
+// date that changes every day it stays unpaid can't do that.
+export function dateVariableSymbol(date: Date) {
 	const parts = new Intl.DateTimeFormat('cs-CZ', {
 		timeZone: 'Europe/Prague',
 		day: '2-digit',
 		month: '2-digit',
 		year: 'numeric'
-	}).formatToParts(now);
+	}).formatToParts(date);
 	const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
 	return `${get('day')}${get('month')}${get('year')}`;
 }
@@ -43,8 +45,12 @@ function toSpdMessage(text: string) {
 		.slice(0, 60);
 }
 
-export async function buildPayment(options: { amount: number; recipientMessage: string }) {
-	const variableSymbol = todayVariableSymbol();
+export async function buildPayment(options: {
+	amount: number;
+	recipientMessage: string;
+	date: Date;
+}) {
+	const variableSymbol = dateVariableSymbol(options.date);
 	const iban = czAccountToIban(ACCOUNT_NUMBER, BANK_CODE);
 
 	// QR Platba (SPD 1.0) — https://qr-platba.cz/pro-vyvojare/specifikace-formatu/

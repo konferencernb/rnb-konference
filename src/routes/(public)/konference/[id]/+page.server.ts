@@ -33,10 +33,16 @@ export const load: PageServerLoad = async ({ params, locals, request, getClientA
 	// visitor's name as the recipient message when they're logged in. A
 	// logged-out visitor gets a literal placeholder instead, telling them
 	// what to fill in themselves — there's no name to pre-fill for them.
+	// The variable symbol identifies the conference the payment is for, not
+	// when it was made — so it's keyed on startsAt, not "today". A conference
+	// still being prepared (startsAt not set yet) falls back to today's date;
+	// it'll change once the admin fills in a real date, but there's nothing
+	// else to key it on until then.
 	const payment = !unlocked
 		? await buildPayment({
 				amount: found.price,
-				recipientMessage: locals.user ? formatCustomerName(locals.user) : 'VAŠE JMÉNO A PŘÍJMENÍ'
+				recipientMessage: locals.user ? formatCustomerName(locals.user) : 'VAŠE JMÉNO A PŘÍJMENÍ',
+				date: found.startsAt ?? new Date()
 			})
 		: null;
 
