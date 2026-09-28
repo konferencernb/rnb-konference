@@ -21,6 +21,12 @@ export const conference = pgTable('conference', {
 	description: text('description'),
 	price: integer('price').notNull(),
 	videoUrl: text('video_url'),
+	// A manually uploaded thumbnail, stored inline as a data URL (there's no
+	// object storage in this app, and the Railway app service's filesystem
+	// isn't persisted across deploys — the Postgres row is the only thing
+	// that reliably survives). Always wins over the YouTube-derived one when
+	// set; see getConferenceThumbnail in $lib/youtube.
+	thumbnailImage: text('thumbnail_image'),
 	status: text('status', { enum: conferenceStatus }).notNull().default('upcoming'),
 	startsAt: timestamp('starts_at'),
 	// Soft-delete: set instead of actually deleting the row, so existing

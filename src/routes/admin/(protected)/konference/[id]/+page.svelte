@@ -14,11 +14,28 @@
 	let submitting = $state(false);
 	let description = $state(data.conference.description ?? '');
 	let status = $state(data.conference.status);
+
+	let thumbnailFiles = $state<FileList | undefined>();
+	let removeThumbnail = $state(false);
+	// Previews the newly picked file before it's ever uploaded — revoked on
+	// cleanup so a quick succession of picks doesn't leak object URLs.
+	let newThumbnailPreview = $state<string | null>(null);
+	$effect(() => {
+		const file = thumbnailFiles?.[0];
+		if (!file) {
+			newThumbnailPreview = null;
+			return;
+		}
+		const url = URL.createObjectURL(file);
+		newThumbnailPreview = url;
+		return () => URL.revokeObjectURL(url);
+	});
 </script>
 
 <form
 	method="POST"
 	action="?/update"
+	enctype="multipart/form-data"
 	class="grid gap-6 lg:grid-cols-[2fr_1fr]"
 	use:enhance={() => {
 		submitting = true;
@@ -60,6 +77,44 @@
 			<div class="flex flex-col gap-1.5">
 				<Label for="description">Popis</Label>
 				<RichTextEditor id="description" name="description" bind:value={description} />
+			</div>
+			<div class="flex flex-col gap-1.5">
+				<Label for="thumbnail">Miniatura (1280×720)</Label>
+				{#if newThumbnailPreview}
+					<img
+						src={newThumbnailPreview}
+						alt=""
+						class="aspect-video w-full max-w-xs rounded-lg border object-cover"
+					/>
+				{:else if data.conference.thumbnailImage && !removeThumbnail}
+					<img
+						src={data.conference.thumbnailImage}
+						alt=""
+						class="aspect-video w-full max-w-xs rounded-lg border object-cover"
+					/>
+				{/if}
+				<Input
+					id="thumbnail"
+					name="thumbnail"
+					type="file"
+					accept="image/*"
+					bind:files={thumbnailFiles}
+				/>
+				<p class="text-xs text-muted-foreground">
+					Nahraná miniatura má vždy přednost před náhledem z YouTube. Bez nahrané miniatury se
+					použije náhled z YouTube URL, a bez obojího výchozí obrázek.
+				</p>
+				{#if data.conference.thumbnailImage}
+					<label class="flex items-center gap-2 text-sm text-muted-foreground">
+						<input
+							type="checkbox"
+							name="removeThumbnail"
+							value="true"
+							bind:checked={removeThumbnail}
+						/>
+						Odebrat nahranou miniaturu
+					</label>
+				{/if}
 			</div>
 		</CardContent>
 	</Card>

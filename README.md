@@ -114,6 +114,7 @@ src/
       sanitize.ts               Server-side HTML sanitization for rich-text descriptions
       watch-tracking.ts         Heartbeat recording + every "who watched what" query
       payment.ts                QR Platba (SPD) code + payment details for locked conferences
+      thumbnail.ts              processThumbnail() — resize/re-encode an uploaded conference thumbnail
       db/
         index.ts             Drizzle client
         schema.ts             Re-exports every *.schema.ts below
