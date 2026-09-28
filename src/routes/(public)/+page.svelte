@@ -190,16 +190,20 @@
 			<h2 class="text-2xl font-bold tracking-tight sm:text-3xl">
 				Odborný obsah pod vedením specialistů Rehabilitační nemocnice Beroun
 			</h2>
+			<!-- eslint-disable no-irregular-whitespace -- U+00A0 keeps a single-letter
+			word (a/i/s/z) from ever landing alone at the end of a line, per Czech
+			typographic convention. -->
 			<p class="text-muted-foreground">
-				Přednášky připravují a vedou lékaři a odborníci nejen z Rehabilitační nemocnice Beroun.
-				Obsah je určený jak pro zdravotnický personál, který si chce doplnit a prohloubit odborné
-				znalosti přímo z praxe, tak pro veřejnost.
+				Přednášky připravují a vedou lékaři a odborníci nejen z Rehabilitační nemocnice Beroun.
+				Obsah je určený jak pro zdravotnický personál, který si chce doplnit a prohloubit odborné
+				znalosti přímo z praxe, tak pro veřejnost.
 			</p>
 			<p class="text-muted-foreground">
-				Součástí programu mohou být i diskusní panely s vedoucími lékaři a odborníky, kde se
-				probírají aktuální témata zdravotnictví. Záznam si můžete pustit i zpětně, kdykoliv se vám
+				Součástí programu mohou být i diskusní panely s vedoucími lékaři a odborníky, kde se
+				probírají aktuální témata zdravotnictví. Záznam si můžete pustit i zpětně, kdykoliv se vám
 				to bude hodit.
 			</p>
+			<!-- eslint-enable no-irregular-whitespace -->
 		</div>
 	</div>
 </section>
