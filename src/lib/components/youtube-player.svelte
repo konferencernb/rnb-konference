@@ -363,10 +363,6 @@
 		>
 			<MonitorSmartphone class="size-8 text-white/70" />
 			<p class="font-medium text-white">Tento účet je právě používán na jiném zařízení</p>
-			<p class="text-sm text-white/60">
-				Přehrávání je najednou možné jen na jednom zařízení. Zkuste to prosím znovu, až tam
-				přehrávání skončí.
-			</p>
 		</div>
 	{:else}
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
