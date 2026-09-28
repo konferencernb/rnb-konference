@@ -5,6 +5,7 @@
 	import ConferenceStatusBadge from '$lib/components/conference-status-badge.svelte';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Separator } from '$lib/components/ui/separator';
+	import { getDeviceId } from '$lib/device-id';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -33,21 +34,42 @@
 		return () => clearInterval(interval);
 	});
 
+	// True once another device on this account has been confirmed active more
+	// recently — see the heartbeat effect below and $lib/server/active-viewer.ts.
+	// Starts false (optimistic) rather than blocking on the first heartbeat's
+	// round trip, so a normal single-device visit isn't held up or shown a
+	// flash of "blocked" while that first check is still in flight.
+	let blockedElsewhere = $state(false);
+
 	// Tell the server we're actually watching, roughly every 15s (kept in sync
 	// with HEARTBEAT_INTERVAL_SECONDS in $lib/server/watch-tracking.ts). This is
 	// what powers "aktuálně sledující" (presence, from the most recent beat)
 	// and "celkem sledujících" (one row per viewer, so leaving and coming back
-	// mid-stream doesn't count twice) on the admin "Sledovat" tab. Paused while
-	// the tab isn't visible so a forgotten background tab doesn't count as
-	// someone actively watching.
+	// mid-stream doesn't count twice) on the admin "Sledovat" tab — and, via
+	// the response's `blocked` flag, the same-account concurrent-device check
+	// (blockedElsewhere above). Paused while the tab isn't visible so a
+	// forgotten background tab doesn't count as someone actively watching, or
+	// wrongly block a device that's only in the background.
 	$effect(() => {
 		if (!watchableVideoUrl) return;
 
 		const id = conferenceId;
+		const deviceId = getDeviceId();
 
-		function sendHeartbeat() {
+		async function sendHeartbeat() {
 			if (document.hidden) return;
-			fetch(`/api/konference/${id}/heartbeat`, { method: 'POST' }).catch(() => {});
+			try {
+				const response = await fetch(`/api/konference/${id}/heartbeat`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ deviceId })
+				});
+				if (!response.ok) return;
+				const data = (await response.json()) as { blocked?: boolean };
+				blockedElsewhere = data.blocked === true;
+			} catch {
+				// A network hiccup shouldn't itself flip the block state either way.
+			}
 		}
 
 		function onVisibilityChange() {
@@ -78,6 +100,7 @@
 			videoUrl={data.conference.videoUrl}
 			title={data.conference.title}
 			isLive={data.conference.status === 'live'}
+			blocked={blockedElsewhere}
 		/>
 		{#if data.conference.description}
 			<div class="rich-text mt-6 text-muted-foreground">

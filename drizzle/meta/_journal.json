@@ -85,6 +85,13 @@
       "when": 1790606633470,
       "tag": "0011_damp_lorna_dane",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790609300041,
+      "tag": "0012_thankful_rockslide",
+      "breakpoints": true
     }
   ]
 }

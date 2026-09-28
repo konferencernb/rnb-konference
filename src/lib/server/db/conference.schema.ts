@@ -143,11 +143,58 @@ export const watchHeartbeat = pgTable(
 	(table) => [index('watch_heartbeat_conference_seenAt_idx').on(table.conferenceId, table.seenAt)]
 );
 
+// One row per (user, device) — a device announces itself with every
+// heartbeat (see $lib/device-id.ts) and this is what lets the server tell
+// two genuinely different devices of the same account apart from one device
+// refreshing/reconnecting, to block account-sharing (someone watching on
+// their phone while someone else is on the same account on a computer).
+// Account-wide on purpose, not scoped to a conference — sharing one login
+// across two people isn't limited to them both watching the same stream.
+export const activeViewer = pgTable(
+	'active_viewer',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		deviceId: text('device_id').notNull(),
+		conferenceId: text('conference_id')
+			.notNull()
+			.references(() => conference.id, { onDelete: 'cascade' }),
+		ipAddress: text('ip_address'),
+		// Reset whenever a device reconnects after being stale for longer than
+		// the active-viewer threshold (see isOtherDeviceActive in
+		// $lib/server/active-viewer.ts) — otherwise a device that hasn't
+		// actually been watching for hours would still out-rank a genuinely
+		// active one just because it happened to connect first, ever.
+		firstSeenAt: timestamp('first_seen_at').defaultNow().notNull(),
+		lastSeenAt: timestamp('last_seen_at').defaultNow().notNull()
+	},
+	(table) => [
+		uniqueIndex('active_viewer_user_device_uidx').on(table.userId, table.deviceId),
+		index('active_viewer_userId_idx').on(table.userId)
+	]
+);
+
 export const conferenceRelations = relations(conference, ({ many }) => ({
 	accessGrants: many(accessGrant),
 	accessLogs: many(accessLog),
 	watchSessions: many(watchSession),
-	watchHeartbeats: many(watchHeartbeat)
+	watchHeartbeats: many(watchHeartbeat),
+	activeViewers: many(activeViewer)
+}));
+
+export const activeViewerRelations = relations(activeViewer, ({ one }) => ({
+	user: one(user, {
+		fields: [activeViewer.userId],
+		references: [user.id]
+	}),
+	conference: one(conference, {
+		fields: [activeViewer.conferenceId],
+		references: [conference.id]
+	})
 }));
 
 export const watchHeartbeatRelations = relations(watchHeartbeat, ({ one }) => ({

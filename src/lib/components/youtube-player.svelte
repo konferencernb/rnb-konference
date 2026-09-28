@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Maximize from '@lucide/svelte/icons/maximize';
 	import Minimize from '@lucide/svelte/icons/minimize';
+	import MonitorSmartphone from '@lucide/svelte/icons/monitor-smartphone';
 	import Pause from '@lucide/svelte/icons/pause';
 	import Play from '@lucide/svelte/icons/play';
 	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
@@ -11,8 +12,9 @@
 	let {
 		videoUrl,
 		title,
-		isLive = false
-	}: { videoUrl: string; title: string; isLive?: boolean } = $props();
+		isLive = false,
+		blocked = false
+	}: { videoUrl: string; title: string; isLive?: boolean; blocked?: boolean } = $props();
 
 	function formatTime(seconds: number) {
 		if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
@@ -145,7 +147,7 @@
 	});
 
 	$effect(() => {
-		if (!target || playbackError) return;
+		if (!target || playbackError || blocked) return;
 		let cancelled = false;
 		let pollHandle: ReturnType<typeof setInterval> | undefined;
 
@@ -354,6 +356,17 @@
 			<TriangleAlert class="size-8 text-white/70" />
 			<p class="font-medium text-white">Přenos se nepodařilo načíst</p>
 			<p class="text-sm text-white/60">Zkuste to prosím později, nebo nás kontaktujte.</p>
+		</div>
+	{:else if blocked}
+		<div
+			class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black px-6 text-center"
+		>
+			<MonitorSmartphone class="size-8 text-white/70" />
+			<p class="font-medium text-white">Tento účet je právě používán na jiném zařízení</p>
+			<p class="text-sm text-white/60">
+				Přehrávání je najednou možné jen na jednom zařízení. Zkuste to prosím znovu, až tam
+				přehrávání skončí.
+			</p>
 		</div>
 	{:else}
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
