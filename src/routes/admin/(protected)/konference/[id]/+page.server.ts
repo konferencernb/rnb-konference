@@ -4,6 +4,7 @@ import { db } from '$lib/server/db';
 import { conference, conferenceStatus } from '$lib/server/db/schema';
 import { parsePragueDatetimeLocal } from '$lib/server/prague-time';
 import { sanitizeDescription } from '$lib/server/sanitize';
+import { processThumbnail } from '$lib/server/thumbnail';
 import { getYoutubeVideoId } from '$lib/youtube';
 import type { Actions } from './$types';
 
@@ -39,6 +40,21 @@ export const actions: Actions = {
 			return fail(400, { error: 'Cena musí být kladné číslo.' });
 		}
 
+		// A file input can't be pre-filled with the existing thumbnail, so
+		// "leave it alone" (no new file, remove box unchecked) has to mean
+		// exactly that — only touch the column when a new file was picked or
+		// removal was explicitly requested.
+		const thumbnailFile = formData.get('thumbnail');
+		const removeThumbnail = formData.get('removeThumbnail') === 'true';
+		let thumbnailImage: string | null | undefined;
+		if (thumbnailFile instanceof File && thumbnailFile.size > 0) {
+			const result = await processThumbnail(thumbnailFile);
+			if ('error' in result) return fail(400, { error: result.error });
+			thumbnailImage = result.dataUrl;
+		} else if (removeThumbnail) {
+			thumbnailImage = null;
+		}
+
 		await db
 			.update(conference)
 			.set({
@@ -47,7 +63,8 @@ export const actions: Actions = {
 				price,
 				videoUrl: videoUrl || null,
 				status: status as (typeof conferenceStatus)[number],
-				startsAt: startsAtRaw ? parsePragueDatetimeLocal(startsAtRaw) : null
+				startsAt: startsAtRaw ? parsePragueDatetimeLocal(startsAtRaw) : null,
+				...(thumbnailImage !== undefined ? { thumbnailImage } : {})
 			})
 			.where(eq(conference.id, params.id));
 

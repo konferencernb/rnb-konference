@@ -14,6 +14,19 @@
 	let submitting = $state(false);
 	let description = $state('');
 	let status = $state('upcoming');
+
+	let thumbnailFiles = $state<FileList | undefined>();
+	let thumbnailPreview = $state<string | null>(null);
+	$effect(() => {
+		const file = thumbnailFiles?.[0];
+		if (!file) {
+			thumbnailPreview = null;
+			return;
+		}
+		const url = URL.createObjectURL(file);
+		thumbnailPreview = url;
+		return () => URL.revokeObjectURL(url);
+	});
 </script>
 
 <div class="mx-auto max-w-6xl px-6 py-10">
@@ -26,6 +39,7 @@
 
 	<form
 		method="POST"
+		enctype="multipart/form-data"
 		class="mt-8 grid gap-6 lg:grid-cols-[2fr_1fr]"
 		use:enhance={() => {
 			submitting = true;
@@ -74,6 +88,27 @@
 				<div class="flex flex-col gap-1.5">
 					<Label for="description">Popis</Label>
 					<RichTextEditor id="description" name="description" bind:value={description} />
+				</div>
+				<div class="flex flex-col gap-1.5">
+					<Label for="thumbnail">Miniatura</Label>
+					{#if thumbnailPreview}
+						<img
+							src={thumbnailPreview}
+							alt=""
+							class="aspect-video w-full max-w-xs rounded-lg border object-cover"
+						/>
+					{/if}
+					<Input
+						id="thumbnail"
+						name="thumbnail"
+						type="file"
+						accept="image/*"
+						bind:files={thumbnailFiles}
+					/>
+					<p class="text-xs text-muted-foreground">
+						Nahraná miniatura má vždy přednost před náhledem z YouTube. Bez nahrané miniatury se
+						použije náhled z YouTube URL, a bez obojího výchozí obrázek.
+					</p>
 				</div>
 			</CardContent>
 		</Card>

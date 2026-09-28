@@ -36,6 +36,7 @@
 			id: string;
 			title: string;
 			videoUrl: string | null;
+			thumbnailImage: string | null;
 			startsAt: string | Date | null;
 			status: Status;
 			unlocked: boolean;
@@ -50,7 +51,14 @@
 
 	let thumbnailQuality = $state<'maxresdefault' | 'hqdefault'>('maxresdefault');
 	let thumbnailFailed = $state(false);
-	const thumbnailUrl = $derived(getYoutubeThumbnailUrl(conference.videoUrl, thumbnailQuality));
+	// An uploaded thumbnail always wins over the one derived from the YouTube
+	// link — see the comment on `thumbnailImage` in conference.schema.ts.
+	// It's a data URL sharp already re-encoded server-side, so none of the
+	// maxresdefault/hqdefault fallback dance below applies to it.
+	const youtubeThumbnailUrl = $derived(
+		getYoutubeThumbnailUrl(conference.videoUrl, thumbnailQuality)
+	);
+	const thumbnailUrl = $derived(conference.thumbnailImage ?? youtubeThumbnailUrl);
 
 	// AlertDialogAction doesn't auto-close the dialog (unlike Cancel) — that's
 	// bits-ui's own behavior, since an "action" is expected to do something
@@ -58,6 +66,7 @@
 	let deleteDialogOpen = $state(false);
 
 	function onThumbnailLoad(event: Event) {
+		if (conference.thumbnailImage) return;
 		// YouTube serves a 120x90 placeholder (not a real error) when maxresdefault doesn't exist
 		const img = event.currentTarget as HTMLImageElement;
 		if (thumbnailQuality === 'maxresdefault' && img.naturalWidth <= 120) {
@@ -66,7 +75,7 @@
 	}
 
 	function onThumbnailError() {
-		if (thumbnailQuality === 'maxresdefault') {
+		if (!conference.thumbnailImage && thumbnailQuality === 'maxresdefault') {
 			thumbnailQuality = 'hqdefault';
 		} else {
 			thumbnailFailed = true;

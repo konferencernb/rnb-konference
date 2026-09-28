@@ -393,9 +393,44 @@ the page as a data URL), then an "nebo" divider and the same details as text
 
 The account is a constant in `payment.ts` (7632131/0100), converted to an
 IBAN at runtime since SPD wants one. Amount is the conference's `price`. The
-variable symbol is today's date as `ddMMyyyy` in Czech time (`Europe/Prague`,
-not the server's UTC, which would be a day behind shortly after midnight).
-The message is the customer's first + last name (`formatCustomerName`); in
-the QR it's stripped of diacritics because a real banking app didn't cope with
-them (it showed "Karel Macka"), while the text under the QR keeps the full
-name. Case is left as-is.
+variable symbol is the conference's `startsAt` as `ddMMyyyy` in Czech time
+(`Europe/Prague`, not the server's UTC) — not "today", since an admin
+reconciling the bank statement needs the VS to say _which conference_ a
+payment was for, and it has to stay stable while unpaid. Falls back to
+today's date if `startsAt` isn't set yet. The message is the customer's first
+
+- last name (`formatCustomerName`), or the literal placeholder "VAŠE JMÉNO A
+  PŘÍJMENÍ" for a logged-out visitor — no login is required to see payment
+  details. In the QR it's stripped of diacritics because a real banking app
+  didn't cope with them (it showed "Karel Macka"), while the text under the QR
+  keeps the full name/placeholder as typed. Case is left as-is. Below the QR,
+  three numbered steps (pay, email name/email to community@nember.cz, access
+  gets activated once verified) explain the flow; the account/VS/message also
+  appear as plain text under an "nebo platbou na účet" divider for paying by
+  hand.
+
+## Conference thumbnails
+
+A conference card's image, in priority order: an uploaded thumbnail
+(`conference.thumbnailImage`) > a thumbnail derived from the YouTube URL
+(`getYoutubeThumbnailUrl`, tries `maxresdefault` then falls back to
+`hqdefault` client-side in `conference-card.svelte` if YouTube doesn't have
+one) > the plain gradient background already used as the card's base (no
+separate "default image" asset — the gradient already renders whenever
+`thumbnailUrl` is falsy). An uploaded thumbnail always wins, even alongside a
+YouTube URL.
+
+Uploads go through `processThumbnail()` (`$lib/server/thumbnail.ts`): resized
+to 1280×720 (`cover`, matching a YouTube thumbnail's aspect ratio) and
+re-encoded to WebP with `sharp`, then stored as a data URL directly on the
+`conference` row — there's no object storage in this app, and the Railway app
+service's filesystem doesn't persist across deploys, so the Postgres row is
+the only thing that reliably survives. 8 MB upload cap before processing.
+
+Both `/admin/konference/new` and `/admin/konference/[id]` have a file input
+(multipart form) with a client-side object-URL preview of the newly picked
+file before it's ever uploaded. The edit page additionally shows the current
+thumbnail (if any) and an "Odebrat nahranou miniaturu" checkbox — a file
+input can't be pre-filled with the existing value, so the update action only
+touches the column when a new file was picked or removal was explicitly
+requested; leaving both alone doesn't clear it.

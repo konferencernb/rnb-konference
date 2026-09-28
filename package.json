@@ -74,6 +74,7 @@
 		"@tiptap/starter-kit": "^3.30.5",
 		"isomorphic-dompurify": "^3.23.0",
 		"qrcode": "^1.5.4",
+		"sharp": "^0.35.5",
 		"xlsx": "^0.18.5"
 	}
 }

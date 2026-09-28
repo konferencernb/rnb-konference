@@ -4,6 +4,7 @@ import { db } from '$lib/server/db';
 import { conference, conferenceStatus } from '$lib/server/db/schema';
 import { parsePragueDatetimeLocal } from '$lib/server/prague-time';
 import { sanitizeDescription } from '$lib/server/sanitize';
+import { processThumbnail } from '$lib/server/thumbnail';
 import { getYoutubeVideoId } from '$lib/youtube';
 import type { Actions } from './$types';
 
@@ -41,6 +42,14 @@ export const actions: Actions = {
 			return fail(400, { error: 'Cena musí být kladné číslo.' });
 		}
 
+		const thumbnailFile = formData.get('thumbnail');
+		let thumbnailImage: string | null = null;
+		if (thumbnailFile instanceof File && thumbnailFile.size > 0) {
+			const result = await processThumbnail(thumbnailFile);
+			if ('error' in result) return fail(400, { error: result.error });
+			thumbnailImage = result.dataUrl;
+		}
+
 		const [created] = await db
 			.insert(conference)
 			.values({
@@ -48,6 +57,7 @@ export const actions: Actions = {
 				description,
 				price,
 				videoUrl: videoUrl || null,
+				thumbnailImage,
 				status: status as (typeof conferenceStatus)[number],
 				startsAt: startsAtRaw ? parsePragueDatetimeLocal(startsAtRaw) : null
 			})
