@@ -434,3 +434,49 @@ thumbnail (if any) and an "Odebrat nahranou miniaturu" checkbox — a file
 input can't be pre-filled with the existing value, so the update action only
 touches the column when a new file was picked or removal was explicitly
 requested; leaving both alone doesn't clear it.
+
+## Concurrent-device blocking (account sharing)
+
+Deliberately _not_ IP-based — an IP check would both falsely block a
+legitimate single user (mobile carriers rotate IPs constantly via CGNAT) and
+miss the most common real sharing case (two people on the same home WiFi
+share one public IP). Instead it's presence-based, built on the heartbeat
+infrastructure watch-tracking.ts already had: two genuinely different
+browsers pinging as the same account, close together in time, is the actual
+signal.
+
+`$lib/device-id.ts`'s `getDeviceId()` generates a `crypto.randomUUID()` on
+first use and keeps it in `localStorage` — shared across tabs/reloads of one
+browser, but distinct per browser/device. Sent with every heartbeat from
+`/konference/[id]/+page.svelte`.
+
+`$lib/server/active-viewer.ts`'s `checkAndRecordActiveViewer()` upserts one
+row per (user, device) into `active_viewer` and reports whether _another_
+device of the same account is active — active meaning a heartbeat within the
+last 40s (matching watch-tracking's `ONLINE_THRESHOLD_SECONDS`). Which device
+"wins" is decided by `firstSeenAt` (oldest continuously-active streak),
+**not** by whichever heartbeat lands last — otherwise two devices whose
+pings merely alternate being the most recent would flicker between blocking
+each other every ~15s. `firstSeenAt` resets on reconnect after a gap longer
+than the threshold, so a device that stopped watching hours ago can't keep
+permanently outranking one that's actually still there. The check is
+account-wide, not scoped to one conference — sharing a login isn't limited
+to both people watching the same stream — and skipped entirely for
+`role === 'admin'`.
+
+The heartbeat endpoint (`/api/konference/[id]/heartbeat`) returns
+`{ blocked }`; `youtube-player.svelte` takes a `blocked` prop that both skips
+creating the `YT.Player` and shows a distinct overlay ("Tento účet je právě
+používán na jiném zařízení") in place of the video. `blockedElsewhere`
+starts `false` (optimistic) rather than waiting on the first heartbeat's
+round trip, so a normal single-device visit isn't delayed or shown a flash
+of "blocked" — the real-world tradeoff is that a second device can play for
+a brief moment (up to the first heartbeat round trip, not the full interval)
+before being shut down, since the video streams directly from YouTube's CDN
+to the client and nothing server-side proxies it to enforce this
+synchronously.
+
+Not proof against someone deliberately working around it (an incognito
+window is a "new device" by this check) — a deterrent in the same spirit as
+the player's disabled right-click and hidden YouTube link, not a hard
+security boundary.
