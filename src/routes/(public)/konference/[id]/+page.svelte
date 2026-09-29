@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { Button } from '$lib/components/ui/button';
 	import VideoOff from '@lucide/svelte/icons/video-off';
 	import YoutubePlayer from '$lib/components/youtube-player.svelte';
 	import ConferenceStatusBadge from '$lib/components/conference-status-badge.svelte';
@@ -188,6 +190,10 @@
 					<dt class="text-muted-foreground">Zpráva pro příjemce</dt>
 					<dd class="font-medium">{data.payment.recipientMessage}</dd>
 				</dl>
+				<div class="flex flex-col items-center gap-3">
+					<p class="text-sm text-muted-foreground">Máte již přístup ke konferenci?</p>
+					<Button href={resolve('/prihlaseni')}>Přihlásit se</Button>
+				</div>
 			</CardContent>
 		</Card>
 	{/if}
