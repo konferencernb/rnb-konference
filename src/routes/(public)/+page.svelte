@@ -72,7 +72,7 @@
 					? 'animate-in delay-200 duration-700 fade-in slide-in-from-top-4'
 					: ''}"
 			>
-				Odborné přednášky pro lékaře, zdravotnický personál a veřejnost. Po uhrazení účastnického
+				Odborné přednášky pro lékaře, zdravotnický personál a&nbsp;veřejnost. Po uhrazení účastnického
 				poplatku vám přidělíme přístup ke konkrétní konferenci.
 			</p>
 			<div class={playIntro ? 'animate-in delay-300 duration-700 fade-in slide-in-from-top-4' : ''}>
