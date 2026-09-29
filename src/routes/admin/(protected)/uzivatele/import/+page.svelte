@@ -9,10 +9,10 @@
 	<div>
 		<h1 class="text-2xl font-bold">Import z Excelu</h1>
 		<p class="mt-1 text-muted-foreground">
-			Hromadně založí uživatele (nebo najde ty existující podle emailu) a pošle jim pozvánku k
-			registraci. Přístup ke konferencím se přiděluje zvlášť.
+			Hromadně založí uživatele (nebo najde ty existující podle emailu) a podle sloupce Konference
+			jim přidělí přístup. Novým uživatelům pošle pozvánku k registraci.
 		</p>
 	</div>
 
-	<ExcelUserImport existingEmails={data.existingEmails} withConference={false} />
+	<ExcelUserImport conferences={data.conferences} existingEmails={data.existingEmails} />
 </div>

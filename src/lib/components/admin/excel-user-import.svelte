@@ -106,7 +106,7 @@
 	// this predicts exactly what would fail at import time instead of the
 	// admin only finding out from the post-import error summary.
 	function isConferenceMatched(conferenceName: string) {
-		return conferences.some((c) => c.title === conferenceName);
+		return conferences.filter((c) => c.title === conferenceName).length === 1;
 	}
 
 	// Blocks the import outright (not just a post-import error) — a row with
@@ -378,7 +378,7 @@
 						  }
 						| undefined;
 					importSummary = data ?? null;
-					importedRows = [];
+					if (data && data.errors.length === 0) importedRows = [];
 					if (data && (data.imported > 0 || data.emailsSent > 0)) {
 						toast.success(`Importováno uživatelů: ${data.imported}.`);
 					} else if (data && data.errors.length === 0 && data.emailsFailed === 0) {

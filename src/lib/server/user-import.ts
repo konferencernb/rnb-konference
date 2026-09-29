@@ -73,20 +73,24 @@ export async function parseImportFile(
 // Looks the conference up by its exact (still-active) title, skips a grant
 // that already exists instead of erroring on it (an admin re-running the same
 // import shouldn't see "already exists" as a failure), and sends the same
-// "access granted" email either way.
+// "access granted" email only for a newly created grant.
 async function grantConferenceByTitle(userId: string, conferenceTitle: string, grantedBy: string) {
-	const [found] = await db
+	const matches = await db
 		.select()
 		.from(conference)
 		.where(and(eq(conference.title, conferenceTitle), isNull(conference.deactivatedAt)));
 
+	const [found] = matches;
+	if (matches.length > 1) {
+		return { error: `Název konference „${conferenceTitle}“ není jednoznačný.` as const };
+	}
 	if (!found) return { error: `Konference „${conferenceTitle}“ nenalezena.` as const };
 
 	const [existing] = await db
 		.select({ id: accessGrant.id })
 		.from(accessGrant)
 		.where(and(eq(accessGrant.userId, userId), eq(accessGrant.conferenceId, found.id)));
-	if (existing) return { ok: true as const, emailSent: true };
+	if (existing) return { ok: true as const, emailSent: null };
 
 	await db.insert(accessGrant).values({ userId, conferenceId: found.id, grantedBy });
 
@@ -112,9 +116,39 @@ export async function importUsersFromRows(
 	rows: ImportRow[],
 	grantedBy: string
 ): Promise<ImportSummary> {
+	// Validate the entire selection before creating accounts or sending invites.
+	const activeConferences = await db
+		.select({ title: conference.title })
+		.from(conference)
+		.where(isNull(conference.deactivatedAt));
+	const validationErrors: string[] = [];
+	for (const [index, row] of rows.entries()) {
+		if (
+			!row.firstName?.trim() ||
+			!row.lastName?.trim() ||
+			!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email?.trim() ?? '')
+		) {
+			validationErrors.push(`Řádek ${index + 2}: chybí jméno, příjmení nebo platný e-mail.`);
+		}
+		const matches = activeConferences.filter((c) => c.title === row.conferenceName);
+		if (matches.length !== 1) {
+			validationErrors.push(
+				`Řádek ${index + 2}: konference „${row.conferenceName || ''}“ chybí, nebyla nalezena nebo její název není jednoznačný.`
+			);
+		}
+	}
+	if (validationErrors.length) {
+		return {
+			imported: 0,
+			emailsSent: 0,
+			emailsFailed: 0,
+			failedEmails: [],
+			errors: validationErrors
+		};
+	}
 	const byEmail = new Map<string, ImportRow[]>();
 	for (const row of rows) {
-		const email = row.email.toLowerCase();
+		const email = row.email.trim().toLowerCase();
 		const group = byEmail.get(email);
 		if (group) group.push(row);
 		else byEmail.set(email, [row]);
@@ -161,6 +195,8 @@ export async function importUsersFromRows(
 			const grant = await grantConferenceByTitle(userId, row.conferenceName, grantedBy);
 			if ('error' in grant) {
 				result.errors.push(`${email}: ${grant.error}`);
+			} else if (grant.emailSent === null) {
+				continue;
 			} else if (grant.emailSent) {
 				result.emailsSent++;
 			} else {

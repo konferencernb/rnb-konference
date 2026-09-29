@@ -284,16 +284,13 @@ Two separate Excel-import entry points, sharing one component
 (`$lib/server/user-import.ts` — `parseImportFile`/`importUsersFromRows`) so
 they can't drift apart:
 
-- **`/admin/uzivatele/import`** (icon button next to "+" on `/admin/uzivatele`):
-  creates/finds accounts by email only — Jméno/Příjmení/E-mail columns, no
-  conference assignment at all. The server strips any "Konference" column
-  the sheet might still have, rather than trusting the client to omit it.
-- **`/admin/konference/import`** (icon button next to "+" on `/admin/konference`):
-  the same account creation, plus a required "Konference" column matched by
-  exact (active) title. A row with a missing or unmatched conference name is
-  flagged inline ("Chybí konference" / "Nenalezeno: „…“") and **blocks the
-  Importovat button entirely** — letting it through would silently create the
-  person without the access the admin thinks they're granting.
+- **`/admin/uzivatele/import`** and **`/admin/konference/import`** both
+  create/find accounts by email and grant access using the required Konference
+  column. Both download the four-column `/sablony/import-uzivatelu.xlsx` template.
+  Conference titles must match exactly one active conference. Missing, unknown,
+  or ambiguous titles block the review screen and are validated again on the
+  server before any accounts or invitations are created. Existing grants are
+  preserved and skipped without counting an email that was not sent.
 
 Shared review-screen behavior (component prop `withConference` toggles the
 conference-specific parts): rows are grouped by email into one card per

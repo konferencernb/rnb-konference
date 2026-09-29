@@ -1,4 +1,7 @@
 import { fail } from '@sveltejs/kit';
+import { isNull } from 'drizzle-orm';
+import { db } from '$lib/server/db';
+import { conference } from '$lib/server/db/schema';
 import {
 	getExistingEmails,
 	importUsersFromRows,
@@ -8,17 +11,23 @@ import {
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-	return { existingEmails: await getExistingEmails() };
+	const [conferences, existingEmails] = await Promise.all([
+		db
+			.select({ id: conference.id, title: conference.title })
+			.from(conference)
+			.where(isNull(conference.deactivatedAt))
+			.orderBy(conference.title),
+		getExistingEmails()
+	]);
+
+	return { conferences, existingEmails };
 };
 
 export const actions: Actions = {
 	// Only reads the file and hands back what it found — nothing is created
 	// yet, so a bad header row or a typo an admin wants to fix first never
 	// touches the database. importUsers (below) does the actual creating,
-	// once the admin has reviewed/edited the parsed rows client-side. Any
-	// "Konference" column in the sheet is ignored here — this page only
-	// creates/finds accounts, never grants access (see /admin/konference/import
-	// for that).
+	// once the admin has reviewed/edited the parsed rows client-side.
 	parseImport: async ({ request }) => {
 		const formData = await request.formData();
 		const file = formData.get('file');
@@ -30,25 +39,36 @@ export const actions: Actions = {
 		const result = await parseImportFile(file);
 		if ('error' in result) return fail(400, { importError: result.error });
 
-		// Strip whatever the sheet might have had under "Konference" — this
-		// page never grants access, only creates/finds accounts.
-		const rows = result.rows.map((row) => ({ ...row, conferenceName: '' }));
-
-		return { importedRows: rows };
+		return { importedRows: result.rows };
 	},
 
 	importUsers: async ({ request, locals }) => {
 		const formData = await request.formData();
 		const raw = formData.get('rows')?.toString();
-		const rows = raw ? (JSON.parse(raw) as ImportRow[]) : [];
+		let rows: ImportRow[];
+		try {
+			const parsed: unknown = JSON.parse(raw || '[]');
+			if (
+				!Array.isArray(parsed) ||
+				!parsed.every(
+					(row) =>
+						row &&
+						['firstName', 'lastName', 'email', 'conferenceName'].every(
+							(key) => typeof row[key] === 'string'
+						)
+				)
+			) {
+				return fail(400, { importError: 'Neplatná data importu. Nahrajte soubor znovu.' });
+			}
+			rows = parsed;
+		} catch {
+			return fail(400, { importError: 'Neplatná data importu. Nahrajte soubor znovu.' });
+		}
 
 		if (rows.length === 0) {
 			return fail(400, { importError: 'Nejsou vybráni žádní uživatelé k importu.' });
 		}
 
-		return await importUsersFromRows(
-			rows.map((row) => ({ ...row, conferenceName: '' })),
-			locals.user!.id
-		);
+		return await importUsersFromRows(rows, locals.user!.id);
 	}
 };

@@ -45,7 +45,25 @@ export const actions: Actions = {
 	importUsers: async ({ request, locals }) => {
 		const formData = await request.formData();
 		const raw = formData.get('rows')?.toString();
-		const rows = raw ? (JSON.parse(raw) as ImportRow[]) : [];
+		let rows: ImportRow[];
+		try {
+			const parsed: unknown = JSON.parse(raw || '[]');
+			if (
+				!Array.isArray(parsed) ||
+				!parsed.every(
+					(row) =>
+						row &&
+						['firstName', 'lastName', 'email', 'conferenceName'].every(
+							(key) => typeof row[key] === 'string'
+						)
+				)
+			) {
+				return fail(400, { importError: 'Neplatná data importu. Nahrajte soubor znovu.' });
+			}
+			rows = parsed;
+		} catch {
+			return fail(400, { importError: 'Neplatná data importu. Nahrajte soubor znovu.' });
+		}
 
 		if (rows.length === 0) {
 			return fail(400, { importError: 'Nejsou vybráni žádní uživatelé k importu.' });
